@@ -31,17 +31,45 @@
 
         <!-- 视图容器 -->
         <div class="view-container">
-            <!-- 视图 1: Welcome -->
+            <!-- 视图 1: Welcome / Hero -->
             <div class="view active" id="view-welcome">
-                <div class="welcome-content">
-                    <div class="subtitle">初音未来 · 雨</div>
-                    <h1>Welcome to <span>MIKU</span> Wiki</h1>
-                    <p style="color:var(--sub-text);max-width:500px;">这是属于你的个人知识库 / 角色档案馆。在下方输入关键词即可在全站检索。</p>
-                    <div class="search-box">
-                        <input type="text" id="global-search" placeholder="搜索 wiki 条目...">
-                        <button id="search-btn">GO</button>
+                <section class="hero">
+                    <!-- 右侧初音角色区(放 miku-hero.png 即显示;没有则为辉光氛围) -->
+                    <div class="hero-character"></div>
+
+                    <!-- 左侧主文案 -->
+                    <div class="hero-left">
+                        <div class="hero-jp">雨の記憶、声のアーカイブ</div>
+                        <h1 class="hero-title">
+                            <span class="t-miku">MIKU</span>
+                            <span class="t-rain">RAIN</span>
+                        </h1>
+                        <p class="hero-sub">A DIGITAL ARCHIVE<br>OF SOUND AND MEMORY</p>
+                        <div class="search-box hero-search">
+                            <input type="text" id="global-search" placeholder="SEARCH THE ARCHIVE...">
+                            <button id="search-btn">SEARCH</button>
+                        </div>
+                        <div class="hero-social">
+                            <a href="#" title="Twitter">𝕏</a>
+                            <a href="#" title="Bilibili">◎</a>
+                            <a href="#" title="Music">♫</a>
+                            <a href="#" title="YouTube">▶</a>
+                        </div>
                     </div>
-                </div>
+
+                    <!-- 右下角索引 + 条形码 -->
+                    <div class="hero-index">
+                        <div class="hi-name">HATSUNE MIKU / VIRTUAL DIVA</div>
+                        <div class="hi-idx">RAIN INDEX <span>01</span></div>
+                        <div class="hi-barcode"></div>
+                    </div>
+
+                    <!-- 底部音频波形 -->
+                    <canvas id="waveform"></canvas>
+
+                    <!-- 向下滚动提示 -->
+                    <div class="scroll-down">— SCROLL DOWN —</div>
+                </section>
             </div>
 
             <!-- 视图 2: Wiki -->

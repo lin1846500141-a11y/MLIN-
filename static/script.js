@@ -177,53 +177,72 @@ document.getElementById('guestbook-form').addEventListener('submit', async e => 
 })();
 loadWiki();
 
-/* ========== 背景粒子动画(鼠标引力 + 星座连线) ========== */
+/* ========== 背景:赛博雨滴(贴合 RAIN 主题) ========== */
 const canvas = document.getElementById('particles');
 const ctx = canvas.getContext('2d');
-let particles = [];
-const mouse = { x: null, y: null };
-addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
+let drops = [];
 function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
 resize(); addEventListener('resize', resize);
-for (let i = 0; i < 70; i++) {
-    particles.push({
-        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-        r: Math.random() * 2 + 0.5,
-        dx: (Math.random() - 0.5) * 0.4, dy: (Math.random() - 0.5) * 0.4,
-        color: Math.random() > 0.5 ? '#39C5BB' : '#FF1493'
-    });
-}
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(p => {
-        p.x += p.dx; p.y += p.dy;
-        if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
-        if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
-        if (mouse.x !== null) {
-            const dx = mouse.x - p.x, dy = mouse.y - p.y;
-            const dist = Math.hypot(dx, dy);
-            if (dist < 150) { p.x += dx / dist * 0.6; p.y += dy / dist * 0.6; }
-        }
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = 0.7;
-        ctx.fill();
-    });
-    for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-            const d = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
-            if (d < 110) {
-                ctx.beginPath();
-                ctx.moveTo(particles[i].x, particles[i].y);
-                ctx.lineTo(particles[j].x, particles[j].y);
-                ctx.strokeStyle = 'rgba(57,197,187,0.12)';
-                ctx.lineWidth = 0.5;
-                ctx.stroke();
-            }
-        }
+function makeDrops() {
+    drops = [];
+    const count = Math.min(260, Math.floor(innerWidth / 5));
+    for (let i = 0; i < count; i++) {
+        const depth = Math.random();               // 0=远(慢/细/暗) 1=近(快/长/亮)
+        drops.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            len: 8 + depth * 18,
+            speed: 4 + depth * 12,
+            slant: 1.0 + depth * 0.6,               // 轻微斜飘
+            alpha: 0.08 + depth * 0.28,
+            tint: Math.random() > 0.85               // 少量粉色雨丝点缀
+        });
     }
-    requestAnimationFrame(animate);
 }
-animate();
+makeDrops();
+addEventListener('resize', makeDrops);
+function rain() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth = 1;
+    drops.forEach(d => {
+        ctx.beginPath();
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x + d.slant, d.y + d.len);
+        ctx.strokeStyle = d.tint ? `rgba(255,20,147,${d.alpha})` : `rgba(150,230,225,${d.alpha})`;
+        ctx.stroke();
+        d.y += d.speed; d.x += d.slant * 0.4;
+        if (d.y > canvas.height) { d.y = -d.len; d.x = Math.random() * canvas.width; }
+    });
+    requestAnimationFrame(rain);
+}
+rain();
+
+/* ========== Hero 底部音频波形(播放时更激烈) ========== */
+const wave = document.getElementById('waveform');
+if (wave) {
+    const wctx = wave.getContext('2d');
+    function wresize() { wave.width = wave.offsetWidth; wave.height = wave.offsetHeight; }
+    wresize(); addEventListener('resize', wresize);
+    let t = 0;
+    function drawWave() {
+        wresize._w = wave.width;
+        wctx.clearRect(0, 0, wave.width, wave.height);
+        const mid = wave.height * 0.6;
+        const energy = audio && !audio.paused ? 1 : 0.4;   // 放音乐时波形更high
+        const bars = Math.floor(wave.width / 6);
+        for (let i = 0; i < bars; i++) {
+            const x = i * 6;
+            const n = Math.sin(i * 0.25 + t) * Math.sin(i * 0.07 + t * 0.6);
+            const h = (8 + Math.abs(n) * 46 * energy);
+            const grad = wctx.createLinearGradient(0, mid - h, 0, mid + h);
+            grad.addColorStop(0, 'rgba(57,197,187,0.0)');
+            grad.addColorStop(0.5, `rgba(57,197,187,${0.5 * energy + 0.2})`);
+            grad.addColorStop(1, 'rgba(255,20,147,0.0)');
+            wctx.fillStyle = grad;
+            wctx.fillRect(x, mid - h, 3, h * 2);
+        }
+        t += 0.08;
+        requestAnimationFrame(drawWave);
+    }
+    drawWave();
+}
