@@ -52,8 +52,15 @@ function renderWiki(list) {
         </div>`).join('');
 }
 
-/* ========== 功能 1: Tab 切换(含滑动方向 + 本地记忆) ========== */
+/* ========== 功能 1: Tab 切换(含滑动方向 + 本地记忆 + HUD 标号) ========== */
 const tabOrder = ['view-welcome', 'view-wiki', 'view-guestbook', 'view-about'];
+const sectionLabels = {
+    'view-welcome': '01 / HOME',
+    'view-wiki': '02 / ARCHIVE',
+    'view-guestbook': '03 / GUESTBOOK',
+    'view-about': '04 / ABOUT'
+};
+const sectionLabelEl = document.getElementById('section-label');
 function switchTo(targetId) {
     const curBtn = document.querySelector('.tab-btn.active');
     const curId = curBtn ? curBtn.dataset.target : tabOrder[0];
@@ -66,6 +73,14 @@ function switchTo(targetId) {
     const newView = document.getElementById(targetId);
     newView.classList.toggle('reverse', goingBack);
     newView.classList.add('active');
+    // HUD 标号闪一下再换字
+    if (sectionLabelEl) {
+        sectionLabelEl.style.opacity = '0';
+        setTimeout(() => {
+            sectionLabelEl.textContent = sectionLabels[targetId] || '';
+            sectionLabelEl.style.opacity = '0.55';
+        }, 200);
+    }
     localStorage.setItem('miku_tab', targetId);
     if (targetId === 'view-guestbook') loadMessages();   // 进留言板时刷新
 }
