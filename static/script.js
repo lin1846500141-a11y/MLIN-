@@ -1,4 +1,56 @@
 /* ============================================================
+   启动页:终端 boot 序列
+   ============================================================ */
+(function boot() {
+    const screen = document.getElementById('boot-screen');
+    if (!screen) return;
+    const logEl = document.getElementById('boot-log');
+    const fill = document.getElementById('boot-bar-fill');
+    const pctEl = document.getElementById('boot-pct');
+    const stageEl = document.getElementById('boot-stage');
+
+    const seq = [
+        ['INITIALIZING ARCHIVE CORE', 'BOOTING…'],
+        ['LOADING RAIN ENGINE', 'RAIN ENGINE'],
+        ['DECODING VOCALOID DATA', 'DECODING'],
+        ['MOUNTING WIKI MODULE', 'MOUNTING'],
+        ['CONNECTING TO BACKEND', 'LINKING'],
+        ['CALIBRATING WAVEFORM', 'CALIBRATING'],
+        ['SYNCING GUESTBOOK', 'SYNCING'],
+        ['RENDER COMPLETE', 'READY'],
+    ];
+    let i = 0;
+    const t0 = Date.now();
+    function stamp() {
+        const s = (Date.now() - t0) / 1000;
+        const ss = String(1 + Math.floor(s)).padStart(2, '0');
+        const cs = String(Math.floor((s % 1) * 100)).padStart(2, '0');
+        return `02:${ss}:${cs}`;
+    }
+    function done() {
+        screen.classList.add('hide');
+        setTimeout(() => screen.remove(), 650);
+    }
+    screen.addEventListener('click', done);
+
+    const step = () => {
+        if (i >= seq.length) { setTimeout(done, 450); return; }
+        const [msg, stage] = seq[i];
+        const last = i === seq.length - 1;
+        logEl.insertAdjacentHTML('beforeend',
+            `<div><span class="ts">${stamp()}</span>${msg} ... <span class="ok">${last ? '✔ DONE' : 'OK'}</span></div>`);
+        logEl.scrollTop = logEl.scrollHeight;
+        const pct = Math.round(((i + 1) / seq.length) * 100);
+        fill.style.width = pct + '%';
+        pctEl.textContent = String(pct).padStart(2, '0');
+        stageEl.textContent = stage;
+        i++;
+        setTimeout(step, last ? 350 : 280 + Math.random() * 160);
+    };
+    setTimeout(step, 300);
+})();
+
+/* ============================================================
    MIKU x RAIN — 前端逻辑
    数据从 Python 后端 (FastAPI) 拉取;后端不可用时回退到本地内置数据。
    ============================================================ */

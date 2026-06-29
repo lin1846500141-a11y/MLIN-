@@ -8,6 +8,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 启动页(终端 boot 序列) -->
+    <div id="boot-screen">
+        <div class="boot-inner">
+            <div class="boot-logo">MIKU<span>×</span>RAIN</div>
+            <div class="boot-sub">DIGITAL ARCHIVE OF SOUND AND MEMORY</div>
+            <div class="boot-log" id="boot-log"></div>
+            <div class="boot-bar"><div class="boot-bar-fill" id="boot-bar-fill"></div></div>
+            <div class="boot-status">[ <span id="boot-pct">00</span>% ] <span id="boot-stage">BOOTING…</span></div>
+            <div class="boot-skip">CLICK TO SKIP</div>
+        </div>
+    </div>
+
     <div id="bg-image"></div>
     <canvas id="particles"></canvas>
 

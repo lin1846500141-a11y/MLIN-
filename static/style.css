@@ -33,6 +33,33 @@ body {
     height: 100vh;
 }
 
+/* ================= 启动页(终端 boot 序列) ================= */
+#boot-screen {
+    position: fixed; inset: 0; z-index: 9999; background: #050808;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', 'Courier New', monospace; cursor: pointer;
+    transition: opacity 0.6s ease;
+    background-image: repeating-linear-gradient(0deg, rgba(57,197,187,0.04) 0 1px, transparent 1px 3px);
+}
+#boot-screen.hide { opacity: 0; pointer-events: none; }
+.boot-inner { width: min(90%, 620px); }
+.boot-logo {
+    font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 700; letter-spacing: 4px; color: #fff;
+    text-shadow: 0 0 24px var(--miku-glow); line-height: 1;
+}
+.boot-logo span { color: var(--miku-pink); margin: 0 6px; }
+.boot-sub { font-size: 0.7rem; letter-spacing: 5px; color: var(--miku-green); margin: 10px 0 26px; }
+.boot-log {
+    font-family: 'Courier New', monospace; font-size: 0.78rem; line-height: 1.7;
+    color: #7fd8d2; height: 150px; overflow: hidden; margin-bottom: 18px;
+}
+.boot-log .ok { color: var(--miku-green); }
+.boot-log .ts { color: #4a6360; margin-right: 10px; }
+.boot-bar { height: 3px; width: 100%; background: rgba(57,197,187,0.15); border-radius: 2px; overflow: hidden; }
+.boot-bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--miku-green), var(--miku-pink)); box-shadow: 0 0 12px var(--miku-glow); transition: width 0.2s ease; }
+.boot-status { font-size: 0.72rem; letter-spacing: 2px; color: #cfeae8; margin-top: 12px; }
+.boot-skip { font-size: 0.6rem; letter-spacing: 3px; color: #3a4f4d; margin-top: 22px; }
+
 /* ================= 2. 全局背景与粒子层 ================= */
 #bg-image {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
