@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIKU x RAIN | Personal Wiki</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="bg-image"></div>
+    <canvas id="particles"></canvas>
+
+    <div class="dashboard">
+        <!-- 头部 -->
+        <header>
+            <div class="logo">MIKU<span style="color:var(--miku-pink)">x</span>RAIN</div>
+            <nav class="tabs">
+                <button class="tab-btn active" data-target="view-welcome">Welcome</button>
+                <button class="tab-btn" data-target="view-wiki">Wiki</button>
+                <button class="tab-btn" data-target="view-guestbook">Guestbook</button>
+                <button class="tab-btn" data-target="view-about">About</button>
+            </nav>
+            <div class="audio-system">
+                <span class="status-dot" id="api-status" title="后端连接状态"></span>
+                <button id="theme-toggle" title="切换暗/亮模式">🌙</button>
+                <span id="audio-label" style="font-size:0.7rem;color:#888;font-family:'Orbitron'">SOUND OFF</span>
+                <button id="audio-toggle">♪ PLAY</button>
+            </div>
+        </header>
+
+        <!-- 视图容器 -->
+        <div class="view-container">
+            <!-- 视图 1: Welcome -->
+            <div class="view active" id="view-welcome">
+                <div class="welcome-content">
+                    <div class="subtitle">初音未来 · 雨</div>
+                    <h1>Welcome to <span>MIKU</span> Wiki</h1>
+                    <p style="color:var(--sub-text);max-width:500px;">这是属于你的个人知识库 / 角色档案馆。在下方输入关键词即可在全站检索。</p>
+                    <div class="search-box">
+                        <input type="text" id="global-search" placeholder="搜索 wiki 条目...">
+                        <button id="search-btn">GO</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 视图 2: Wiki -->
+            <div class="view" id="view-wiki">
+                <h1 style="font-size:1.8rem;margin-bottom:25px;">WIKI <span>ARCHIVE</span></h1>
+                <div class="grid" id="wiki-grid"><!-- JS 动态渲染 --></div>
+            </div>
+
+            <!-- 视图 3: Guestbook 留言板(数据由 Python 后端持久化) -->
+            <div class="view" id="view-guestbook">
+                <h1 style="font-size:1.8rem;margin-bottom:25px;">GUEST <span>BOOK</span></h1>
+                <form class="guestbook-form" id="guestbook-form">
+                    <input type="text" id="gb-name" placeholder="你的昵称" maxlength="20" required>
+                    <textarea id="gb-msg" placeholder="留下你的足迹..." rows="3" maxlength="200" required></textarea>
+                    <button type="submit">发送留言</button>
+                </form>
+                <div id="msg-list"><!-- JS 动态渲染 --></div>
+            </div>
+
+            <!-- 视图 4: About -->
+            <div class="view" id="view-about">
+                <div class="about-text">
+                    <h2>ABOUT</h2>
+                    <p>这是一个赛博朋克风格个人 Wiki:前端用 HTML/CSS/JavaScript 打造玻璃拟态界面,后端用 Python (FastAPI) 提供 Wiki 数据并持久化留言板。</p>
+                    <p style="margin-top:15px;">— Frontend: HTML / CSS / JS &nbsp;·&nbsp; Backend: Python FastAPI —</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

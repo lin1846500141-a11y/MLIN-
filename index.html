@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIKU x RAIN | Personal Wiki</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+    <style>
+        /* ================= 1. 基础变量与配色体系 ================= */
+        :root {
+            --miku-green: #39C5BB;
+            --miku-pink: #FF1493;
+            --miku-glow: rgba(57, 197, 187, 0.6);
+            --miku-pink-glow: rgba(255, 20, 147, 0.6);
+            --bg-dark: #080a0a;
+            --glass-bg: rgba(15, 20, 20, 0.55);
+            --glass-border: rgba(57, 197, 187, 0.25);
+            --text-main: #e0e0e0;
+            --card-bg: rgba(0,0,0,0.25);
+            --sub-text: #bbb;
+        }
+
+        /* 亮色主题:CSS 变量已铺好路,这里覆盖一套即可 */
+        [data-theme="light"] {
+            --bg-dark: #e8f4f3;
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(57, 197, 187, 0.45);
+            --text-main: #1a2a2a;
+            --card-bg: rgba(255,255,255,0.55);
+            --sub-text: #4a5a5a;
+        }
+        body, .dashboard, .wiki-item, .search-box input, header, .view-container { transition: background 0.5s ease, color 0.5s ease, border-color 0.5s ease; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* ================= 2. 全局背景与粒子层 ================= */
+        #bg-image {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            background: linear-gradient(135deg, rgba(5,11,11,0.8) 0%, rgba(17,26,26,0.9) 100%), url('miku-bg.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.8; }
+
+        /* ================= 3. 仪表盘核心面板 ================= */
+        .dashboard {
+            width: 90%; max-width: 1200px; height: 80vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 16px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(57,197,187,0.05);
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
+        }
+        .dashboard::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--miku-green), transparent);
+        }
+
+        /* ================= 4. 头部导航 & 音乐控件 ================= */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--glass-border); }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--miku-green); text-shadow: 0 0 10px var(--miku-glow); }
+        .tabs { display: flex; gap: 30px; }
+        .tab-btn { background: none; border: none; color: #888; font-family: 'Orbitron', sans-serif; cursor: pointer; transition: 0.3s; text-transform: uppercase; padding-bottom: 5px; font-size: 0.85rem; }
+        .tab-btn:hover { color: #ccc; }
+        .tab-btn.active { color: var(--miku-pink); text-shadow: 0 0 8px var(--miku-pink-glow); border-bottom: 2px solid var(--miku-pink); }
+
+        .audio-system { display: flex; align-items: center; gap: 10px; }
+        #audio-toggle {
+            background: rgba(57, 197, 187, 0.05); border: 1px solid var(--glass-border);
+            color: var(--miku-green); padding: 6px 12px; font-family: 'Orbitron', sans-serif; font-size: 0.7rem; cursor: pointer; transition: 0.3s;
+        }
+        #audio-toggle.active { background: rgba(255, 20, 147, 0.2); color: #fff; border-color: var(--miku-pink); box-shadow: 0 0 15px var(--miku-pink-glow); }
+        #theme-toggle {
+            background: rgba(57, 197, 187, 0.05); border: 1px solid var(--glass-border); color: var(--miku-green);
+            padding: 6px 10px; font-size: 0.85rem; cursor: pointer; transition: 0.3s; border-radius: 4px;
+        }
+        #theme-toggle:hover { background: rgba(57, 197, 187, 0.2); box-shadow: 0 0 12px var(--miku-glow); }
+
+        /* ================= 5. 视图切换容器 ================= */
+        .view-container { flex: 1; padding: 40px; overflow-y: auto; position: relative; }
+        .view { display: none; animation: slideIn 0.45s cubic-bezier(0.22, 1, 0.36, 1); height: 100%; }
+        .view.active { display: block; }
+        /* 滑动过渡:从右侧滑入(返回方向由 .reverse 控制) */
+        @keyframes slideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+        .view.reverse { animation-name: slideInReverse; }
+        @keyframes slideInReverse { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* ================= 6. Welcome 视图 & 搜索引擎 ================= */
+        .welcome-content { height: 100%; display: flex; flex-direction: column; justify-content: center; }
+        h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 10px; color: #fff; }
+        h1 span { color: var(--miku-green); }
+        .subtitle { font-family: 'Zhi Mang Xing', cursive; font-size: 1.5rem; color: var(--miku-pink); margin-bottom: 10px; }
+
+        .search-box { margin: 30px 0; display: flex; max-width: 500px; }
+        .search-box input {
+            flex: 1; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); padding: 12px 20px;
+            color: #fff; font-family: 'Orbitron', sans-serif; border-radius: 4px 0 0 4px; outline: none; transition: 0.3s; font-size: 0.85rem;
+        }
+        .search-box input:focus { border-color: var(--miku-pink); box-shadow: 0 0 15px rgba(255, 20, 147, 0.3); }
+        .search-box button {
+            background: var(--miku-green); border: none; color: #000; padding: 0 20px; cursor: pointer;
+            font-family: 'Orbitron', sans-serif; border-radius: 0 4px 4px 0; transition: 0.3s;
+        }
+        .search-box button:hover { background: var(--miku-pink); color: #fff; }
+
+        /* ================= 7. Wiki 卡片网格 ================= */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .wiki-item {
+            background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 10px; padding: 20px;
+            cursor: pointer;
+        }
+        .wiki-item:hover { transform: translateY(-5px); border-color: var(--miku-pink); box-shadow: 0 8px 25px rgba(255,20,147,0.2); }
+        .wiki-item h3 { color: var(--miku-green); font-family: 'Orbitron', sans-serif; font-size: 1rem; margin-bottom: 10px; }
+        .wiki-item p { font-size: 0.95rem; color: var(--sub-text); line-height: 1.5; }
+        .wiki-item .tag { display: inline-block; margin-top: 12px; font-size: 0.7rem; color: var(--miku-pink); border: 1px solid var(--miku-pink); border-radius: 20px; padding: 2px 10px; }
+        .no-result { color: #777; font-family: 'Orbitron', sans-serif; padding: 20px 0; }
+
+        /* ================= 8. About 视图 ================= */
+        .about-text { max-width: 600px; line-height: 1.8; font-size: 1.05rem; color: #ccc; }
+        .about-text h2 { font-family: 'Orbitron', sans-serif; color: var(--miku-green); margin-bottom: 20px; }
+
+        /* ================= 9. 滚动条美化 ================= */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--miku-green); border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+
+        /* ================= 10. 响应式 ================= */
+        @media (max-width: 768px) {
+            body { overflow: auto; height: auto; min-height: 100vh; }
+            .dashboard { width: 95%; height: auto; min-height: 90vh; margin: 20px 0; }
+            header { flex-direction: column; gap: 15px; padding: 15px; }
+            .tabs { gap: 15px; flex-wrap: wrap; justify-content: center; }
+            .view-container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="bg-image"></div>
+    <canvas id="particles"></canvas>
+
+    <div class="dashboard">
+        <!-- 头部 -->
+        <header>
+            <div class="logo">MIKU<span style="color:var(--miku-pink)">x</span>RAIN</div>
+            <nav class="tabs">
+                <button class="tab-btn active" data-target="view-welcome">Welcome</button>
+                <button class="tab-btn" data-target="view-wiki">Wiki</button>
+                <button class="tab-btn" data-target="view-about">About</button>
+            </nav>
+            <div class="audio-system">
+                <button id="theme-toggle" title="切换暗/亮模式">🌙</button>
+                <span id="audio-label" style="font-size:0.7rem;color:#888;font-family:'Orbitron'">SOUND OFF</span>
+                <button id="audio-toggle">♪ PLAY</button>
+            </div>
+        </header>
+
+        <!-- 视图容器 -->
+        <div class="view-container">
+            <!-- 视图 1: Welcome -->
+            <div class="view active" id="view-welcome">
+                <div class="welcome-content">
+                    <div class="subtitle">初音未来 · 雨</div>
+                    <h1>Welcome to <span>MIKU</span> Wiki</h1>
+                    <p style="color:#aaa;max-width:500px;">这是属于你的个人知识库 / 角色档案馆。在下方输入关键词即可在全站检索。</p>
+                    <div class="search-box">
+                        <input type="text" id="global-search" placeholder="搜索 wiki 条目...">
+                        <button id="search-btn">GO</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 视图 2: Wiki -->
+            <div class="view" id="view-wiki">
+                <h1 style="font-size:1.8rem;margin-bottom:25px;">WIKI <span>ARCHIVE</span></h1>
+                <div class="grid" id="wiki-grid"><!-- JS 动态渲染 --></div>
+            </div>
+
+            <!-- 视图 3: About -->
+            <div class="view" id="view-about">
+                <div class="about-text">
+                    <h2>ABOUT</h2>
+                    <p>这是一个基于纯前端打造的赛博朋克风格个人 Wiki,采用玻璃拟态设计与初音未来主题配色。后续将接入 Python 后端实现动态数据。</p>
+                    <p style="margin-top:15px;">— Powered by HTML / CSS / JavaScript —</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ========== 数据(将来可换成从 Python 接口 fetch) ========== */
+        const WIKI_DATA = [
+            { title: "初音未来", desc: "Crypton 旗下 VOCALOID2 虚拟歌姬,象征色 #39C5BB。", tag: "角色" },
+            { title: "RAIN", desc: "本站原创主题角色,代表雨夜与电子。", tag: "原创" },
+            { title: "VOCALOID", desc: "Yamaha 开发的歌声合成技术。", tag: "技术" },
+            { title: "Magical Mirai", desc: "初音未来官方年度演唱会。", tag: "活动" },
+            { title: "Glassmorphism", desc: "本站采用的毛玻璃 UI 设计风格。", tag: "设计" },
+            { title: "Cyberpunk", desc: "霓虹 + 暗黑的未来主义视觉风格。", tag: "设计" },
+        ];
+
+        /* ========== 渲染 Wiki 卡片 ========== */
+        const grid = document.getElementById('wiki-grid');
+        function renderWiki(list) {
+            if (!list.length) { grid.innerHTML = '<p class="no-result">// 未找到匹配的条目</p>'; return; }
+            grid.innerHTML = list.map(item => `
+                <div class="wiki-item">
+                    <h3>${item.title}</h3>
+                    <p>${item.desc}</p>
+                    <span class="tag">${item.tag}</span>
+                </div>`).join('');
+        }
+        renderWiki(WIKI_DATA);
+
+        /* ========== 功能 1: Tab 切换(含滑动方向 + 本地记忆) ========== */
+        const tabOrder = ['view-welcome', 'view-wiki', 'view-about'];
+        function switchTo(targetId) {
+            const curBtn = document.querySelector('.tab-btn.active');
+            const curId = curBtn ? curBtn.dataset.target : tabOrder[0];
+            if (curId === targetId) return;
+            // 判断滑动方向:往后滑入用正向,往前用 reverse
+            const goingBack = tabOrder.indexOf(targetId) < tabOrder.indexOf(curId);
+            curBtn?.classList.remove('active');
+            document.querySelector(`[data-target="${targetId}"]`)?.classList.add('active');
+            const curView = document.querySelector('.view.active');
+            curView?.classList.remove('active');
+            const newView = document.getElementById(targetId);
+            newView.classList.toggle('reverse', goingBack);
+            newView.classList.add('active');
+            localStorage.setItem('miku_tab', targetId);   // 记住当前页
+        }
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchTo(btn.dataset.target));
+        });
+
+        /* ========== 功能 2: 搜索过滤 ========== */
+        const searchInput = document.getElementById('global-search');
+        function doSearch() {
+            const kw = searchInput.value.trim().toLowerCase();
+            const filtered = WIKI_DATA.filter(i =>
+                i.title.toLowerCase().includes(kw) ||
+                i.desc.toLowerCase().includes(kw) ||
+                i.tag.toLowerCase().includes(kw)
+            );
+            renderWiki(filtered);
+            switchTo('view-wiki');   // 搜索后自动跳到 Wiki 视图
+        }
+        searchInput.addEventListener('input', () => {
+            // 实时过滤(不切视图)
+            const kw = searchInput.value.trim().toLowerCase();
+            renderWiki(WIKI_DATA.filter(i =>
+                i.title.toLowerCase().includes(kw) ||
+                i.desc.toLowerCase().includes(kw) ||
+                i.tag.toLowerCase().includes(kw)
+            ));
+        });
+        searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+        document.getElementById('search-btn').addEventListener('click', doSearch);
+
+        /* ========== 功能 3: 音乐控件 ========== */
+        const audio = new Audio('miku.mp3');   // 把你的音乐文件命名为 miku.mp3 放同目录
+        audio.loop = true;
+        const toggle = document.getElementById('audio-toggle');
+        const label = document.getElementById('audio-label');
+        toggle.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play().catch(() => alert('请将音乐文件命名为 miku.mp3 放在同一目录'));
+                toggle.classList.add('active');
+                toggle.textContent = '❚❚ PAUSE';
+                label.textContent = 'SOUND ON';
+            } else {
+                audio.pause();
+                toggle.classList.remove('active');
+                toggle.textContent = '♪ PLAY';
+                label.textContent = 'SOUND OFF';
+            }
+        });
+
+        /* ========== 功能 4: 暗/亮主题切换(本地记忆) ========== */
+        const themeToggle = document.getElementById('theme-toggle');
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeToggle.textContent = '☀️';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                themeToggle.textContent = '🌙';
+            }
+            localStorage.setItem('miku_theme', theme);
+        }
+        themeToggle.addEventListener('click', () => {
+            const cur = document.documentElement.getAttribute('data-theme');
+            applyTheme(cur === 'light' ? 'dark' : 'light');
+        });
+
+        /* ========== 启动时恢复上次状态 ========== */
+        (function restore() {
+            applyTheme(localStorage.getItem('miku_theme') || 'dark');
+            const lastTab = localStorage.getItem('miku_tab');
+            if (lastTab && lastTab !== 'view-welcome') switchTo(lastTab);
+        })();
+
+        /* ========== 背景粒子动画(鼠标引力) ========== */
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const mouse = { x: null, y: null };
+        addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
+        function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+        resize(); addEventListener('resize', resize);
+        for (let i = 0; i < 70; i++) {
+            particles.push({
+                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                r: Math.random() * 2 + 0.5,
+                dx: (Math.random() - 0.5) * 0.4, dy: (Math.random() - 0.5) * 0.4,
+                color: Math.random() > 0.5 ? '#39C5BB' : '#FF1493'
+            });
+        }
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.dx; p.y += p.dy;
+                if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+                // 鼠标引力:150px 范围内的粒子被轻轻吸引
+                if (mouse.x !== null) {
+                    const dx = mouse.x - p.x, dy = mouse.y - p.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < 150) {
+                        p.x += dx / dist * 0.6;
+                        p.y += dy / dist * 0.6;
+                    }
+                }
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = 0.7;
+                ctx.fill();
+            });
+            // 鼠标附近粒子之间连线,形成星座效果
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const d = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
+                    if (d < 110) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = 'rgba(57,197,187,0.12)';
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

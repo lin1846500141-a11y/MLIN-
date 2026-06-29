@@ -1,0 +1,17 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+
+# 运行时生成的留言数据(不进版本库)
+messages.json
+
+# 用户自备的媒体文件(体积大,自己放)
+static/miku-bg.jpg
+static/miku.mp3
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store
