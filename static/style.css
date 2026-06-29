@@ -197,7 +197,7 @@ h1 span { color: var(--miku-green); }
     opacity: 0.9; pointer-events: none;
 }
 
-.hero-left { position: relative; z-index: 2; max-width: 640px; }
+.hero-left { position: relative; z-index: 2; max-width: 960px; }
 
 .hero-jp {
     font-family: 'Zhi Mang Xing', cursive; font-size: 1.4rem; color: var(--miku-pink);
@@ -205,8 +205,8 @@ h1 span { color: var(--miku-green); }
 }
 
 .hero-title {
-    font-family: 'Orbitron', sans-serif; font-weight: 700; line-height: 0.92;
-    font-size: clamp(3.5rem, 11vw, 8rem); margin: 0 0 18px; letter-spacing: 2px;
+    font-family: 'Orbitron', sans-serif; font-weight: 700; line-height: 0.78;
+    font-size: clamp(4.5rem, 16vw, 13rem); margin: 0 0 22px; letter-spacing: -2px;
 }
 .hero-title span { display: block; }
 .hero-title .t-miku {
