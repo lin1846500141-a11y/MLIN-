@@ -1,15 +1,4 @@
-"""
-Miku Digital Archive — FastAPI 后端
-
-- 提供 Wiki 数据与留言板读写接口(与原版接口契约一致)
-- 托管 React/Vite 打包产物 frontend/dist(单服务部署,同源无 CORS 问题)
-
-开发模式(前端另起 Vite dev server,并用代理转发 /api):
-    cd backend && uvicorn main:app --reload
-
-生产模式(Render):
-    由 Dockerfile 构建前端后运行,详见 README.md
-"""
+"""MLIN Wiki API — Wiki entries and guestbook storage for the Next.js site."""
 
 import json
 from datetime import datetime
@@ -17,18 +6,15 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 BASE_DIR = Path(__file__).resolve().parent
 WIKI_FILE = BASE_DIR / "wiki_data.json"
 MESSAGES_FILE = BASE_DIR / "messages.json"
-DIST_DIR = BASE_DIR.parent / "frontend" / "dist"   # Vite 打包产物目录
+app = FastAPI(title="MLIN Wiki API", version="1.0.0")
 
-app = FastAPI(title="Miku Digital Archive API", version="0.1.0")
-
-# 本地开发若不用 Vite 代理、浏览器直连 8000 端口时需要跨域;
-# 同源生产环境用不到,保留无害,可按需删除。
+# Next.js normally calls this service through same-origin Route Handlers.
+# CORS remains open for local API inspection and compatibility with the old client.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -63,6 +49,12 @@ def get_wiki():
     return _read_json(WIKI_FILE)
 
 
+@app.get("/api/health")
+def health_check():
+    """Render health check endpoint."""
+    return {"status": "ok", "service": "mlin-wiki-api"}
+
+
 @app.get("/api/messages")
 def get_messages():
     """返回所有留言,最新的在前。"""
@@ -81,8 +73,3 @@ def add_message(msg: Message):
     messages.append(entry)
     _write_json(MESSAGES_FILE, messages)
     return entry
-
-
-# 托管前端构建产物。必须放在 /api 路由之后,否则会拦截 API 请求。
-if DIST_DIR.exists():
-    app.mount("/", StaticFiles(directory=str(DIST_DIR), html=True), name="frontend")

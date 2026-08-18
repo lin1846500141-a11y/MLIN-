@@ -1,117 +1,92 @@
-# Miku Digital Archive — 个人 Wiki
+# MLIN Wiki — Coastal Digital Archive
 
-编辑式极简风格个人 Wiki。前端 **React + Vite**,后端 **Python FastAPI**。
+MLINStudio 的滚动式个人档案。新版视觉以夏日海岸摄影、锐利蓝白配色、超大编辑字体与细密信息网格为核心，不再使用旧版 Miku / 暗色赛博视觉。
 
-> 前端已从「纯 HTML/CSS/JS」迁移到 React，并采用大字体、大留白和 Miku 青的编辑式视觉系统。
-> 后端接口契约(`/api/wiki`、`/api/messages`)**保持不变**,留言数据格式不变。
+## 技术栈
 
----
+- Next.js 16 App Router + React 19 + TypeScript
+- GSAP + ScrollTrigger：主页滚动叙事与视差
+- Lenis：平滑滚动
+- Motion：局部进入、筛选与 hover 反馈
+- Tailwind CSS 4：主题 token 与基础样式管线
+- FastAPI：Wiki 数据与留言 API
+- Vercel：Next.js 前端
+- Render：FastAPI 后端
 
-## 目录结构
+## 目录
 
+```text
+MLIN-/
+├── frontend/
+│   ├── app/                 # App Router 页面与同源 API 代理
+│   ├── components/          # 首页、导航、Wiki、留言板组件
+│   ├── lib/                 # 类型、回退数据、内容配置
+│   └── public/media/        # 优化后的原创海岸主视觉
+├── backend/
+│   ├── main.py              # /api/wiki、/api/messages、/api/health
+│   ├── wiki_data.json
+│   └── messages.json
+├── Dockerfile               # Render API 镜像
+└── render.yaml              # Render Blueprint
 ```
-miku-rain/
-├── frontend/                 # React + Vite
-│   ├── index.html
-│   ├── package.json
-│   ├── vite.config.js        # dev 时把 /api 代理到后端
-│   ├── public/               # 可选背景音乐(miku.mp3)
-│   └── src/
-│       ├── main.jsx
-│       ├── App.jsx           # 布局 + 视图容器 + 氛围层
-│       ├── styles/global.css # 编辑式响应布局与全局视觉变量
-│       ├── context/AppContext.jsx  # 主题/标签页/后端状态/音频 全局状态
-│       ├── lib/              # api 封装、回退数据、标签页配置
-│       └── components/
-│           ├── Header.jsx
-│           ├── Hero.jsx
-│           ├── WikiView.jsx
-│           ├── GuestbookView.jsx
-│           └── AboutView.jsx
-├── backend/                  # FastAPI
-│   ├── main.py               # /api/wiki、/api/messages + 托管 frontend/dist
-│   ├── requirements.txt
-│   ├── wiki_data.json        # Wiki 数据(可编辑)
-│   └── messages.json         # 留言持久化(运行时写入)
-├── Dockerfile                # 生产构建:Node 构建前端 + Python 运行后端
-├── render.yaml               # Render Blueprint
-└── .gitignore
-```
-
----
-
-## 从旧项目迁移
-
-旧项目是 `index.html + style.css + script.js + main.py` 平铺结构。迁移时只需把**数据与资源**搬进新位置,代码无需改动:
-
-| 旧文件 | 新位置 | 说明 |
-| --- | --- | --- |
-| `wiki_data.json` | `backend/wiki_data.json` | 若你改过 Wiki 内容,请覆盖(仓库已内置原版 6 条) |
-| `messages.json` | `backend/messages.json` | 若有历史留言,请覆盖(仓库内置为空 `[]`) |
-| `miku.mp3` | `frontend/public/miku.mp3` | 可选 |
-
-> 音频资源可选，缺失时首页其他功能不受影响。
-
----
 
 ## 本地开发
 
-需要两个终端(或后台)分别跑前端和后端:
+需要两个终端：
 
 ```bash
-# 终端 1:后端(FastAPI,默认 8000 端口)
+# 终端 1：FastAPI
 cd backend
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn main:app --reload
+```
 
-# 终端 2:前端(Vite dev server,默认 5173 端口,自动代理 /api)
+```bash
+# 终端 2：Next.js
 cd frontend
 npm install
 npm run dev
 ```
 
-浏览器打开 http://localhost:5173 。Vite 会把 `/api/*` 转发到 `localhost:8000`,无需处理跨域。
+访问 `http://localhost:3000`。开发环境下，Next.js 的 `/api/messages` 默认代理到 `http://127.0.0.1:8000`；Wiki 在后端不可用时会使用本地索引，因此页面仍可浏览。
 
-> 如果后端没启动:前端会自动回退到本地内置 Wiki 数据,留言板会提示需要后端。
-
----
-
-## 生产构建 & 部署到 Render
-
-### 方式 A:用 Docker(推荐,Render 原生支持)
-
-仓库已提供 `Dockerfile` 和 `render.yaml`:
-
-1. 把本目录推送到 GitHub 仓库。
-2. Render 控制台 → **New + → Blueprint** → 选择该仓库。
-3. Render 会自动读取 `render.yaml`,用 Docker 构建(Node 打前端包 → Python 跑后端)并部署。
-
-也可以手动建 Docker 服务:Render → New → **Web Service** → 选仓库,`Runtime` 选 **Docker**,
-构建/启动命令都已在 `Dockerfile` 里写好了。
-
-### 方式 B:不用 Docker(本地构建,提交 dist)
-
-Render 的 Python 运行环境**不带 npm**,所以要么用 Docker(方式 A),要么本地先把前端打好包、把 `dist/` 提交上去:
+## 验证
 
 ```bash
 cd frontend
-npm install
-npm run build        # 生成 frontend/dist
+npm run typecheck
+npm run build
 ```
 
-然后把 `frontend/dist` 一并提交到仓库(Render 上使用 **Python** 运行时,启动命令
-`cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`)。注意 `.gitignore` 默认忽略了
-`frontend/dist`,走此方式时需移除该忽略行。
+## 部署
 
----
+### 1. Render 后端
 
-## 重要提示:留言数据的持久化
+在 Render 中使用仓库根目录的 `render.yaml` 创建 Blueprint，或按 `Dockerfile` 创建 Web Service。部署成功后可通过 `/api/health` 检查状态。
 
-`messages.json` 是**文件级持久化**(与原版一致)。Render 免费实例的磁盘是**临时的**:
-实例重启或重新部署后,写入的文件会丢失。如果希望留言长期保留,二选一:
+### 2. Vercel 前端
 
-1. 升级到 Render 付费计划并挂载 **Persistent Disk**(把 `messages.json` 放到持久化卷里);
-2. 改用数据库(如 Render Postgres / SQLite 文件 + 持久化卷)。
+在 Vercel 导入同一 GitHub 仓库：
 
-> 本次迁移**没有改变数据模型**,迁移本身不会丢数据——但 Render 免费层重新部署本身就会重置磁盘,
-> 这点与原版行为相同,并非本次改动引入。
+1. Root Directory 设为 `frontend`。
+2. Framework Preset 选择 Next.js（通常会自动识别）。
+3. 添加服务端环境变量：
+
+```text
+BACKEND_API_URL=https://mlin.onrender.com
+```
+
+4. 部署。浏览器只访问 Vercel 的同源 `/api/*`，真正的 Render 地址由 Next.js Route Handler 在服务端使用。
+
+## 留言持久化
+
+当前留言继续写入 `backend/messages.json`，与旧版接口兼容。Render 免费实例磁盘是临时的，重启或重新部署可能丢失写入内容。正式长期使用时建议迁移到 Postgres / Supabase，或为 Render 服务挂载持久化磁盘。
+
+## 内容维护
+
+- 首页三组内容：`frontend/lib/archive-data.ts`
+- Wiki 后端数据：`backend/wiki_data.json`
+- 全局设计 token 与响应式样式：`frontend/app/globals.css`
+- 首页滚动时间线：`frontend/components/home/home-experience.tsx`

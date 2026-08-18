@@ -1,0 +1,5 @@
+# Legacy assets kept in Git history but not shipped with the new site.
+public/about-gallery/
+public/weapons/
+public/media/about-transition.mp4
+dist/

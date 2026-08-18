@@ -3,6 +3,9 @@ node_modules/
 
 # 构建产物(建议本地构建后由 Docker/CI 生成,不入库)
 frontend/dist/
+frontend/.next/
+frontend/out/
+*.tsbuildinfo
 
 # Python
 __pycache__/
@@ -16,3 +19,4 @@ Thumbs.db
 
 # 本地配置
 .env
+.env.local
