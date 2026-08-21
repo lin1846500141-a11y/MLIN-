@@ -250,6 +250,20 @@ img {
 .hero-project-hotspot { top: 53.2%; right: 2.15%; width: 8.9%; height: 5.7%; }
 .hero-scroll-hotspot { right: 2.25%; bottom: 7.2%; width: 8.8%; height: 11.8%; }
 
+.hero-scroll-hotspot::after {
+  position: absolute;
+  bottom: 16%;
+  left: 10%;
+  width: 1px;
+  height: 38%;
+  content: "";
+  pointer-events: none;
+  transform-origin: bottom center;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 0 9px rgba(255, 255, 255, .7);
+  animation: hero-scroll-pulse 1.8s cubic-bezier(.45, 0, .2, 1) infinite;
+}
+
 .hero-mobile { display: none; }
 
 .hero-blue-wipe {
@@ -260,6 +274,12 @@ img {
   transform: scaleY(0);
   background: var(--sea);
   will-change: transform;
+}
+
+@keyframes hero-scroll-pulse {
+  0%, 100% { opacity: .12; transform: scaleY(.18); }
+  48% { opacity: .92; transform: scaleY(1); }
+  72% { opacity: .38; transform: scaleY(.72); }
 }
 
 @keyframes cue-bounce {
