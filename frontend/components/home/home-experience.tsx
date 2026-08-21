@@ -52,20 +52,18 @@ export function HomeExperience() {
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       if (reduceMotion) return
 
-      gsap.from('.hero-title-letter', {
-        yPercent: 112,
-        duration: 1.25,
-        stagger: 0.055,
-        ease: 'power4.out',
-        delay: 0.1,
+      gsap.from('.hero-master-image', {
+        opacity: 0,
+        duration: 1.35,
+        ease: 'power3.out',
       })
-      gsap.from('.hero-intro-item', {
+      gsap.from('.hero-mobile-intro', {
         opacity: 0,
         y: 16,
         duration: 0.8,
         stagger: 0.08,
         ease: 'power3.out',
-        delay: 0.65,
+        delay: 0.35,
       })
 
       const heroTimeline = gsap.timeline({
@@ -78,17 +76,17 @@ export function HomeExperience() {
       })
 
       heroTimeline
-        .to('.hero-photo', { scale: 1.13, yPercent: 4, ease: 'none' }, 0)
-        .to('.hero-title', { yPercent: -42, letterSpacing: '-0.055em', ease: 'none' }, 0)
-        .to('.hero-rail-content', { yPercent: 24, ease: 'none' }, 0)
-        .to('.hero-intro-copy, .hero-scroll-cue', { opacity: 0, y: -30, ease: 'none' }, 0.12)
+        .to('.hero-master-image', { scale: 1.055, yPercent: 1.8, ease: 'none' }, 0)
+        .to('.hero-mobile-title', { yPercent: -34, ease: 'none' }, 0)
+        .to('.hero-mobile-rail', { yPercent: 16, ease: 'none' }, 0)
+        .to('.hero-mobile-copy, .hero-mobile-scroll', { opacity: 0, y: -24, ease: 'none' }, 0.12)
         .fromTo(
           '.hero-blue-wipe',
           { scaleY: 0 },
           { scaleY: 1, transformOrigin: 'bottom center', ease: 'power2.inOut' },
           0.7,
         )
-        .to('.hero-title, .hero-rail', { opacity: 0, ease: 'none' }, 0.88)
+        .to('.hero-master, .hero-mobile', { opacity: 0, ease: 'none' }, 0.88)
 
       gsap.from('.manifesto-line span', {
         yPercent: 110,
@@ -131,77 +129,61 @@ export function HomeExperience() {
     <main className="home" id="top" ref={root}>
       <section className="hero-scroll" ref={hero} aria-label="MLIN Wiki 海岸档案首页">
         <div className="hero-stage">
-          <div className="hero-photo">
-            <Image
-              src="/media/coastal-hero.webp"
-              alt="夏日海岸小镇、海面与沿海电车"
-              fill
-              priority
-              sizes="(max-width: 900px) 100vw, 84vw"
+          <picture className="hero-master" aria-hidden="true">
+            <source media="(max-width: 760px)" srcSet="/media/coastal-hero.webp" />
+            <img
+              className="hero-master-image"
+              src="/media/coastal-archive-hero.jpg"
+              alt=""
+              width="1536"
+              height="864"
+              fetchPriority="high"
             />
-          </div>
+          </picture>
 
-          <div className="hero-grid" aria-hidden="true" />
-          <div className="hero-sky-mark hero-intro-item">N 22° 16′ / E 113° 34′</div>
+          <nav className="hero-hotspots" aria-label="首页快捷入口">
+            <Link className="hero-hotspot hero-brand-hotspot" href="/" aria-label="MLIN Wiki 首页" />
+            <Link className="hero-hotspot hero-project-hotspot" href="/wiki" aria-label="查看 MLIN Wiki 项目" />
+            <a className="hero-hotspot hero-scroll-hotspot" href="#studio-position" aria-label="向下滚动浏览" />
+          </nav>
 
-          <div className="hero-title" aria-label="Archive">
-            {'ARCHIVE'.split('').map((letter, index) => (
-              <span className="hero-title-mask" key={`${letter}-${index}`}>
-                <b className="hero-title-letter">{letter}</b>
-              </span>
-            ))}
-          </div>
-
-          <div className="hero-intro-copy">
-            <span className="hero-intro-item">COASTAL DIGITAL ARCHIVE</span>
-            <p className="hero-intro-item">界面、机器与持续发生的实践记录。</p>
-          </div>
-
-          <div className="hero-index hero-intro-item">
-            <span>ISSUE</span>
-            <b>01</b>
-            <i>/ 04</i>
-          </div>
-
-          <aside className="hero-rail">
-            <div className="hero-rail-content">
-              <div className="rail-topline">
-                <span>COASTAL STUDY</span>
-                <b>01 / 04</b>
-              </div>
-              <div className="rail-map" aria-hidden="true">
-                <svg viewBox="0 0 180 250" role="presentation">
-                  <path d="M26 8c39 26 13 49 46 70 25 16 67 4 73 35 7 35-48 39-54 74-4 22 19 39 55 55" />
-                  <path d="M52 38c19 15 22 33 45 41 25 8 51-3 57 21" />
-                  <circle cx="91" cy="187" r="5" />
-                  <line x1="91" y1="170" x2="91" y2="204" />
-                  <line x1="74" y1="187" x2="108" y2="187" />
-                </svg>
-              </div>
-              <div className="rail-location">
-                <span>FIELD LOCATION</span>
-                <strong>SEA / CITY</strong>
-                <small>BLUE HOUR 08:42</small>
-              </div>
-              <Link className="rail-link" href="/wiki">
-                VIEW INDEX <span>↗</span>
-              </Link>
-              <div className="rail-vertical">FIELD NOTES · MLIN WIKI</div>
+          <div className="hero-mobile">
+            <div className="hero-mobile-rule hero-mobile-intro" aria-hidden="true"><i /></div>
+            <Link className="hero-mobile-brand hero-mobile-intro" href="/">MLIN Wiki</Link>
+            <div className="hero-mobile-title hero-mobile-intro" aria-label="Archive">ARCHIVE</div>
+            <div className="hero-mobile-copy hero-mobile-intro">
+              <span>COASTAL EDITORIAL ARCHIVE</span>
+              <p>Field notes, visual studies and quiet discoveries from the edges of land and sea.</p>
             </div>
-          </aside>
-
-          <div className="hero-signature hero-intro-item">MLINStudio</div>
-          <div className="hero-scroll-cue hero-intro-item">
-            <span />
-            SCROLL TO MOVE FORWARD
-            <b>↓</b>
+            <div className="hero-mobile-rail">
+              <div className="hero-mobile-rail-head hero-mobile-intro">
+                <span>COASTAL STUDY</span>
+                <b>01 <i>/ 04</i></b>
+              </div>
+              <div className="hero-mobile-coordinate hero-mobile-intro">
+                <span>35.2149° N</span>
+                <span>139.3467° E</span>
+              </div>
+              <Link className="hero-mobile-project hero-mobile-intro" href="/wiki">VIEW PROJECT ↗</Link>
+            </div>
+            <div className="hero-mobile-signature hero-mobile-intro">MLINStudio</div>
+            <a className="hero-mobile-scroll hero-mobile-intro" href="#studio-position">
+              <span>SCROLL TO<br />MOVE FORWARD</span>
+              <b>↓</b>
+            </a>
           </div>
-          <Crosshair className="hero-crosshair" />
+
+          <div className="sr-only">
+            <h1>MLIN Wiki — Coastal Editorial Archive</h1>
+            <p>Field notes, visual studies and quiet discoveries from the edges of land and sea.</p>
+            <p>Coastal Study 01 of 04. Coordinates 35.2149 degrees north, 139.3467 degrees east.</p>
+            <p>MLINStudio</p>
+          </div>
           <div className="hero-blue-wipe" aria-hidden="true" />
         </div>
       </section>
 
-      <section className="manifesto-section">
+      <section className="manifesto-section" id="studio-position">
         <div className="manifesto-meta">
           <span>02 — STUDIO POSITION</span>
           <span>BUILD / OBSERVE / RECORD</span>

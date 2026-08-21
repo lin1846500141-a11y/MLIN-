@@ -20,6 +20,7 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       smoothWheel: true,
       wheelMultiplier: 0.9,
       touchMultiplier: 1.05,
+      anchors: true,
     })
 
     const update = (time: number) => lenis.raf(time * 1000)

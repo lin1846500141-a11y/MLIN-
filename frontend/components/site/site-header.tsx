@@ -18,6 +18,8 @@ export function SiteHeader() {
 
   useEffect(() => setOpen(false), [pathname])
 
+  if (pathname === '/') return null
+
   return (
     <header className="site-header">
       <Link className="site-name" href="/" aria-label="MLIN Wiki 首页">
