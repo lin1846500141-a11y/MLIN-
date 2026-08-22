@@ -10,8 +10,7 @@ MLINStudio 的滚动式个人档案。新版视觉以夏日海岸摄影、锐利
 - Motion：局部进入、筛选与 hover 反馈
 - Tailwind CSS 4：主题 token 与基础样式管线
 - FastAPI：Wiki 数据与留言 API
-- Vercel：Next.js 前端
-- Render：FastAPI 后端
+- Render Docker Web Service：同一域名运行 Next.js 前端与 FastAPI 后端
 
 ## 目录
 
@@ -26,7 +25,8 @@ MLIN-/
 │   ├── main.py              # /api/wiki、/api/messages、/api/health
 │   ├── wiki_data.json
 │   └── messages.json
-├── Dockerfile               # Render API 镜像
+├── Dockerfile               # Render 全栈多阶段镜像
+├── render-start.sh          # 同时管理 Next.js 与 FastAPI 进程
 └── render.yaml              # Render Blueprint
 ```
 
@@ -62,23 +62,13 @@ npm run build
 
 ## 部署
 
-### 1. Render 后端
+Render 使用仓库根目录的 `render.yaml` 与多阶段 `Dockerfile`。容器对外运行 Next.js，FastAPI 只监听容器内部的 `127.0.0.1:8000`，Next.js Route Handler 通过同源 `/api/*` 转发请求。
 
-在 Render 中使用仓库根目录的 `render.yaml` 创建 Blueprint，或按 `Dockerfile` 创建 Web Service。部署成功后可通过 `/api/health` 检查状态。
+已连接 GitHub 的 Render 服务会在生产分支有新提交时自动构建部署。部署完成后：
 
-### 2. Vercel 前端
-
-在 Vercel 导入同一 GitHub 仓库：
-
-1. Root Directory 设为 `frontend`。
-2. Framework Preset 选择 Next.js（通常会自动识别）。
-3. 添加服务端环境变量：
-
-```text
-BACKEND_API_URL=https://mlin.onrender.com
-```
-
-4. 部署。浏览器只访问 Vercel 的同源 `/api/*`，真正的 Render 地址由 Next.js Route Handler 在服务端使用。
+- `/`：MLIN Wiki 首页
+- `/api/health`：同时检查 Next.js 与 FastAPI
+- `/api/wiki`、`/api/messages`：同源数据接口
 
 ## 留言持久化
 

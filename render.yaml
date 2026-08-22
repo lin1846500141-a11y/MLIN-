@@ -1,10 +1,13 @@
-# Render Blueprint(一次性导入后自动建服务)
-# 用法:在 Render 控制台 New > Blueprint,指向本仓库即可。
+# Render Blueprint：同一 Web Service 同时运行 Next.js 与 FastAPI。
 services:
   - type: web
     name: mlin
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    autoDeploy: true
+    autoDeployTrigger: commit
     healthCheckPath: /api/health
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: BACKEND_API_URL
+        value: http://127.0.0.1:8000
