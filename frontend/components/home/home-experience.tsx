@@ -121,6 +121,71 @@ export function HomeExperience() {
           scrollTrigger: { trigger: row, start: 'top 90%' },
         })
       })
+
+      const progressCurrent = root.current?.querySelector<HTMLElement>('.home-progress-current')
+      const progressSections = [
+        { selector: '.manifesto-section', number: '02' },
+        { selector: '.field-section', number: '03' },
+        { selector: '.routes-section', number: '04' },
+      ]
+
+      gsap.fromTo(
+        '.home-progress-rail',
+        { autoAlpha: 0, x: 18 },
+        {
+          autoAlpha: 1,
+          x: 0,
+          duration: 0.5,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.manifesto-section',
+            start: 'top 86%',
+            toggleActions: 'play none none reverse',
+          },
+        },
+      )
+
+      gsap.fromTo(
+        '.home-progress-fill',
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.manifesto-section',
+            start: 'top bottom',
+            endTrigger: '.routes-section',
+            end: 'bottom 55%',
+            scrub: 0.35,
+          },
+        },
+      )
+
+      gsap.to('.home-progress-rail', {
+        autoAlpha: 0,
+        y: -12,
+        duration: 0.35,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: '.home-footer',
+          start: 'top 88%',
+          toggleActions: 'play none none reverse',
+        },
+      })
+
+      progressSections.forEach(({ selector, number }) => {
+        ScrollTrigger.create({
+          trigger: selector,
+          start: 'top 56%',
+          end: 'bottom 56%',
+          onEnter: () => {
+            if (progressCurrent) progressCurrent.textContent = number
+          },
+          onEnterBack: () => {
+            if (progressCurrent) progressCurrent.textContent = number
+          },
+        })
+      })
     },
     { scope: root },
   )
@@ -182,6 +247,18 @@ export function HomeExperience() {
           <div className="hero-blue-wipe" aria-hidden="true" />
         </div>
       </section>
+
+      <aside className="home-progress-rail" aria-hidden="true">
+        <span className="home-progress-kicker">FIELD INDEX</span>
+        <div className="home-progress-value">
+          <strong className="home-progress-current">02</strong>
+          <span>/ 04</span>
+        </div>
+        <span className="home-progress-track">
+          <i className="home-progress-fill" />
+        </span>
+        <span className="home-progress-caption">SCROLL<br />ARCHIVE</span>
+      </aside>
 
       <section className="manifesto-section" id="studio-position">
         <div className="manifesto-meta">

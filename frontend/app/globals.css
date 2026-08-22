@@ -287,6 +287,96 @@ img {
   50% { transform: translateY(5px); }
 }
 
+.home-progress-rail {
+  position: fixed;
+  z-index: 28;
+  top: 50%;
+  right: clamp(14px, 1.6vw, 28px);
+  display: grid;
+  width: 62px;
+  padding: 13px 10px 12px;
+  border: 1px solid rgba(7, 29, 58, .24);
+  gap: 13px;
+  background: rgba(248, 251, 250, .84);
+  box-shadow: 0 12px 32px rgba(7, 29, 58, .08);
+  color: var(--ink);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+  visibility: hidden;
+  backdrop-filter: blur(12px);
+}
+
+.home-progress-kicker,
+.home-progress-caption {
+  font-family: var(--font-mono);
+  font-size: 6px;
+  line-height: 1.45;
+  letter-spacing: .13em;
+}
+
+.home-progress-kicker {
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(7, 29, 58, .3);
+  white-space: nowrap;
+}
+
+.home-progress-value {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.home-progress-value strong {
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -.07em;
+  line-height: .82;
+}
+
+.home-progress-value span {
+  padding-bottom: 1px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 6px;
+  letter-spacing: .05em;
+}
+
+.home-progress-track {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 108px;
+  margin-left: 4px;
+  background: rgba(7, 29, 58, .2);
+}
+
+.home-progress-track::before,
+.home-progress-track::after {
+  position: absolute;
+  left: -4px;
+  width: 9px;
+  height: 1px;
+  content: "";
+  background: rgba(7, 29, 58, .32);
+}
+
+.home-progress-track::before { top: 0; }
+.home-progress-track::after { bottom: 0; }
+
+.home-progress-fill {
+  position: absolute;
+  inset: 0 auto 0 -1px;
+  display: block;
+  width: 3px;
+  background: var(--coral);
+  box-shadow: 0 0 10px rgba(255, 101, 79, .34);
+  transform: scaleY(0);
+  transform-origin: top center;
+}
+
+.home-progress-caption { color: var(--sea-deep); }
+
 .crosshair {
   position: relative;
   display: inline-block;
@@ -1239,6 +1329,7 @@ img {
 
 @media (max-width: 1050px) {
   .header-record { font-size: 7px; }
+  .home-progress-rail { display: none; }
   .manifesto-copy h2 { font-size: 15vw; }
   .field-plate { min-height: 570px; }
   .plate-1 { min-height: 650px; }
@@ -1611,6 +1702,7 @@ img {
   }
 
   .hero-blue-wipe { display: none; }
+  .home-progress-rail { display: none; }
   .hero-master-image,
   .hero-mobile-title,
   .hero-mobile-rail { transform: none !important; }
