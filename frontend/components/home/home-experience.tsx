@@ -6,10 +6,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { capabilityNotes } from '@/lib/archive-data'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
+
+const archiveLetters = 'ARCHIVE'.split('')
 
 const routeLinks = [
   {
@@ -46,25 +48,114 @@ function Crosshair({ className = '' }: { className?: string }) {
 export function HomeExperience() {
   const root = useRef<HTMLElement>(null)
   const hero = useRef<HTMLElement>(null)
+  const introTimeline = useRef<ReturnType<typeof gsap.timeline> | null>(null)
+
+  useEffect(() => {
+    const stage = root.current?.querySelector<HTMLElement>('.hero-stage')
+    if (!stage) return
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const finePointer = window.matchMedia('(pointer: fine)').matches
+    if (reduceMotion || !finePointer) return
+
+    let frame = 0
+    const updateParallax = (event: PointerEvent) => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const bounds = stage.getBoundingClientRect()
+        const x = (event.clientX - bounds.left) / bounds.width - 0.5
+        const y = (event.clientY - bounds.top) / bounds.height - 0.5
+
+        stage.style.setProperty('--hero-back-x', `${x * -8}px`)
+        stage.style.setProperty('--hero-back-y', `${y * -5}px`)
+        stage.style.setProperty('--hero-front-x', `${x * 15}px`)
+        stage.style.setProperty('--hero-front-y', `${y * 9}px`)
+      })
+    }
+
+    const resetParallax = () => {
+      stage.style.setProperty('--hero-back-x', '0px')
+      stage.style.setProperty('--hero-back-y', '0px')
+      stage.style.setProperty('--hero-front-x', '0px')
+      stage.style.setProperty('--hero-front-y', '0px')
+    }
+
+    stage.addEventListener('pointermove', updateParallax)
+    stage.addEventListener('pointerleave', resetParallax)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      stage.removeEventListener('pointermove', updateParallax)
+      stage.removeEventListener('pointerleave', resetParallax)
+    }
+  }, [])
 
   useGSAP(
     () => {
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       if (reduceMotion) return
 
-      gsap.from('.hero-master-image', {
-        opacity: 0,
-        duration: 1.35,
-        ease: 'power3.out',
+      const launchLetters = gsap.utils.toArray<HTMLElement>('.hero-launch-letter')
+      const titleLetters = gsap.utils.toArray<HTMLElement>('.hero-title-letter')
+      const shutters = gsap.utils.toArray<HTMLElement>('.hero-shutter')
+      const launchOffsets = [64, -48, 78, -64, 54, -72, 42]
+      const launchRotations = [-2.4, 1.8, -1.2, 2.1, -1.7, 1.4, -0.8]
+
+      const markIntroComplete = () => {
+        root.current?.setAttribute('data-intro', 'complete')
+      }
+
+      const intro = gsap.timeline({
+        defaults: { overwrite: 'auto' },
+        onComplete: markIntroComplete,
       })
-      gsap.from('.hero-mobile-intro', {
-        opacity: 0,
-        y: 16,
-        duration: 0.8,
-        stagger: 0.08,
-        ease: 'power3.out',
-        delay: 0.35,
+      introTimeline.current = intro
+
+      launchLetters.forEach((letter, index) => {
+        const landingAt = 0.12 + index * 0.22
+
+        intro
+          .fromTo(
+            letter,
+            {
+              autoAlpha: 0,
+              scale: 6.8 - index * 0.18,
+              y: launchOffsets[index],
+              rotationZ: launchRotations[index],
+              z: 360,
+              filter: 'blur(13px)',
+            },
+            {
+              autoAlpha: 1,
+              scale: 1,
+              y: 0,
+              rotationZ: 0,
+              z: 0,
+              filter: 'blur(0px)',
+              duration: 0.72,
+              ease: 'expo.out',
+            },
+            landingAt,
+          )
+          .to(
+            shutters[index],
+            { yPercent: -102, duration: 0.62, ease: 'power4.inOut' },
+            landingAt + 0.3,
+          )
+          .to(titleLetters[index], { autoAlpha: 1, duration: 0.12 }, landingAt + 0.62)
+          .to(letter, { autoAlpha: 0, duration: 0.14, ease: 'power2.out' }, landingAt + 0.68)
       })
+
+      intro
+        .to('.hero-scene-image', { scale: 1, duration: 1.1, ease: 'power3.out' }, 0.7)
+        .fromTo(
+          '.hero-chrome',
+          { autoAlpha: 0, y: 12 },
+          { autoAlpha: 1, y: 0, duration: 0.62, stagger: 0.045, ease: 'power3.out' },
+          1.82,
+        )
+        .to('.hero-launch-skip', { autoAlpha: 0, duration: 0.2 }, 1.92)
+        .set('.hero-shutters, .hero-launch-word', { autoAlpha: 0 }, 2.28)
 
       const heroTimeline = gsap.timeline({
         scrollTrigger: {
@@ -76,17 +167,22 @@ export function HomeExperience() {
       })
 
       heroTimeline
-        .to('.hero-master-image', { scale: 1.055, yPercent: 1.8, ease: 'none' }, 0)
-        .to('.hero-mobile-title', { yPercent: -34, ease: 'none' }, 0)
-        .to('.hero-mobile-rail', { yPercent: 16, ease: 'none' }, 0)
-        .to('.hero-mobile-copy, .hero-mobile-scroll', { opacity: 0, y: -24, ease: 'none' }, 0.12)
+        .to('.hero-scene-image', { scale: 1.085, yPercent: 1.8, ease: 'none' }, 0)
+        .to('.hero-foreground-image', { scale: 1.13, yPercent: 2.8, ease: 'none' }, 0)
+        .to('.hero-title-final', { yPercent: -15, opacity: 0.18, ease: 'none' }, 0.08)
+        .to('.hero-topbar, .hero-archive-label', { opacity: 0, y: -18, ease: 'none' }, 0.12)
+        .to('.hero-index', { xPercent: 105, ease: 'power2.in' }, 0.42)
         .fromTo(
           '.hero-blue-wipe',
           { scaleY: 0 },
           { scaleY: 1, transformOrigin: 'bottom center', ease: 'power2.inOut' },
           0.7,
         )
-        .to('.hero-master, .hero-mobile', { opacity: 0, ease: 'none' }, 0.88)
+
+      const skipIntro = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') intro.progress(1)
+      }
+      window.addEventListener('keydown', skipIntro)
 
       gsap.from('.manifesto-line span', {
         yPercent: 110,
@@ -186,64 +282,124 @@ export function HomeExperience() {
           },
         })
       })
+
+      return () => {
+        window.removeEventListener('keydown', skipIntro)
+        introTimeline.current = null
+      }
     },
     { scope: root },
   )
 
   return (
-    <main className="home" id="top" ref={root}>
+    <main className="home" id="top" ref={root} data-intro="running">
       <section className="hero-scroll" ref={hero} aria-label="MLIN Wiki 海岸档案首页">
         <div className="hero-stage">
-          <picture className="hero-master" aria-hidden="true">
-            <source media="(max-width: 760px)" srcSet="/media/coastal-hero.webp" />
-            <img
-              className="hero-master-image"
-              src="/media/coastal-archive-hero.jpg"
-              alt=""
-              width="1536"
-              height="864"
-              fetchPriority="high"
-            />
-          </picture>
-
-          <nav className="hero-hotspots" aria-label="首页快捷入口">
-            <Link className="hero-hotspot hero-brand-hotspot" href="/" aria-label="MLIN Wiki 首页" />
-            <Link className="hero-hotspot hero-project-hotspot" href="/wiki" aria-label="查看 MLIN Wiki 项目" />
-            <a className="hero-hotspot hero-scroll-hotspot" href="#studio-position" aria-label="向下滚动浏览" />
-          </nav>
-
-          <div className="hero-mobile">
-            <div className="hero-mobile-rule hero-mobile-intro" aria-hidden="true"><i /></div>
-            <Link className="hero-mobile-brand hero-mobile-intro" href="/">MLIN Wiki</Link>
-            <div className="hero-mobile-title hero-mobile-intro" aria-label="Archive">ARCHIVE</div>
-            <div className="hero-mobile-copy hero-mobile-intro">
-              <span>COASTAL EDITORIAL ARCHIVE</span>
-              <p>Field notes, visual studies and quiet discoveries from the edges of land and sea.</p>
+          <div className="hero-scene" aria-hidden="true">
+            <div className="hero-scene-back">
+              <Image
+                className="hero-scene-image"
+                src="/media/coastal-archive-hero-v2.webp"
+                alt=""
+                fill
+                sizes="100vw"
+                quality={90}
+                priority
+              />
             </div>
-            <div className="hero-mobile-rail">
-              <div className="hero-mobile-rail-head hero-mobile-intro">
-                <span>COASTAL STUDY</span>
-                <b>01 <i>/ 04</i></b>
-              </div>
-              <div className="hero-mobile-coordinate hero-mobile-intro">
-                <span>35.2149° N</span>
-                <span>139.3467° E</span>
-              </div>
-              <Link className="hero-mobile-project hero-mobile-intro" href="/wiki">VIEW PROJECT ↗</Link>
+            <div className="hero-scene-foreground">
+              <Image
+                className="hero-foreground-image"
+                src="/media/coastal-archive-hero-v2.webp"
+                alt=""
+                fill
+                sizes="100vw"
+                quality={90}
+                priority
+              />
             </div>
-            <div className="hero-mobile-signature hero-mobile-intro">MLINStudio</div>
-            <a className="hero-mobile-scroll hero-mobile-intro" href="#studio-position">
-              <span>SCROLL TO<br />MOVE FORWARD</span>
-              <b>↓</b>
-            </a>
+            <div className="hero-atmosphere" />
           </div>
+
+          <h1 className="hero-title-final" aria-label="Archive">
+            <span className="hero-word-scale">
+              {archiveLetters.map((letter, index) => (
+                <span className={`hero-title-letter hero-letter-${index + 1}`} aria-hidden="true" key={`${letter}-${index}`}>
+                  {letter}
+                </span>
+              ))}
+            </span>
+          </h1>
+
+          <div className="hero-grid" aria-hidden="true">
+            <i /><i /><i /><i />
+          </div>
+
+          <header className="hero-topbar hero-chrome">
+            <Link className="hero-brand" href="/" aria-label="MLINStudio 首页">MLINStudio</Link>
+            <span className="hero-top-rule" aria-hidden="true"><i /></span>
+          </header>
+
+          <div className="hero-archive-label hero-chrome">
+            <span>COASTAL SIGNAL ARCHIVE</span>
+            <i />
+          </div>
+
+          <aside className="hero-index hero-chrome" aria-label="Coastal Signal Archive 索引">
+            <div className="hero-index-name">COASTAL<br />SIGNAL<br />ARCHIVE</div>
+            <div className="hero-index-count">
+              <strong>01</strong><span>/04</span>
+            </div>
+            <div className="hero-index-track" aria-hidden="true"><i /></div>
+            <div className="hero-index-coordinate">
+              <span>35.2149° N</span>
+              <span>139.3467° E</span>
+            </div>
+            <Link className="hero-index-project" href="/wiki">
+              <span>FIELD NOTES</span>
+              <b>/ 01</b>
+            </Link>
+            <a className="hero-index-scroll" href="#studio-position">
+              <span>SCROLL<br />ARCHIVE</span>
+              <b aria-hidden="true">↓</b>
+            </a>
+          </aside>
+
+          <div className="hero-shutters" aria-hidden="true">
+            {archiveLetters.map((letter, index) => (
+              <span className={`hero-shutter hero-shutter-${index + 1}`} key={`${letter}-shutter-${index}`} />
+            ))}
+          </div>
+
+          <div className="hero-launch-word" aria-hidden="true">
+            <span className="hero-word-scale">
+              {archiveLetters.map((letter, index) => (
+                <span className={`hero-launch-letter hero-letter-${index + 1}`} key={`${letter}-launch-${index}`}>
+                  {letter}
+                </span>
+              ))}
+            </span>
+          </div>
+
+          <button
+            className="hero-launch-skip"
+            type="button"
+            onClick={() => introTimeline.current?.progress(1)}
+            aria-label="跳过首页启动动画"
+          >
+            SKIP INTRO <span>↗</span>
+          </button>
+
+          <noscript>
+            <style>{`.hero-shutters,.hero-launch-word,.hero-launch-skip{display:none!important}.hero-title-letter,.hero-chrome{opacity:1!important;visibility:visible!important}`}</style>
+          </noscript>
 
           <div className="sr-only">
-            <h1>MLIN Wiki — Coastal Editorial Archive</h1>
-            <p>Field notes, visual studies and quiet discoveries from the edges of land and sea.</p>
+            <p>MLINStudio Coastal Signal Archive.</p>
+            <p>A personal archive of field notes, visual studies and quiet discoveries from the edges of land and sea.</p>
             <p>Coastal Study 01 of 04. Coordinates 35.2149 degrees north, 139.3467 degrees east.</p>
-            <p>MLINStudio</p>
           </div>
+
           <div className="hero-blue-wipe" aria-hidden="true" />
         </div>
       </section>

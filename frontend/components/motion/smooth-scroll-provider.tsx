@@ -10,9 +10,10 @@ gsap.registerPlugin(ScrollTrigger)
 
 export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname()
+  const useNativeScroll = pathname === '/'
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (useNativeScroll || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     const lenis = new Lenis({
       duration: 1.05,
@@ -32,7 +33,7 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       gsap.ticker.remove(update)
       lenis.destroy()
     }
-  }, [])
+  }, [useNativeScroll])
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' })
