@@ -1,17 +1,10 @@
 # 依赖
 node_modules/
 
-# 构建产物(建议本地构建后由 Docker/CI 生成,不入库)
-frontend/dist/
+# 构建产物(由 CI/本地构建生成,不入库)
 frontend/.next/
 frontend/out/
 *.tsbuildinfo
-
-# Python
-__pycache__/
-*.pyc
-.venv/
-venv/
 
 # 系统
 .DS_Store
