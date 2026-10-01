@@ -1,0 +1,196 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import { categories, presets } from '../data/parts';
+---
+
+<BaseLayout title="装机配置器" description="MLINStudio DIY 装机配置器：按用途选择配件，实时生成配置单，带插槽兼容性检查。">
+  <main>
+    <PageIntro
+      index="02"
+      eyebrow="PC BUILDER"
+      title="BUILDER"
+      titleZh="装机配置器"
+      lede="亲手配一台电脑：先套用一个预设，再逐项微调，最后复制走你的配置单。"
+    />
+
+    <div class="builder-layout">
+      <div>
+        <div class="preset-row" data-reveal aria-label="用途预设">
+          {
+            Object.entries(presets).map(([key, p]) => (
+              <button type="button" data-preset={key} data-picks={JSON.stringify(p.picks)}>⚡ {p.label}</button>
+            ))
+          }
+        </div>
+
+        {
+          categories.map((cat) => (
+            <section class="part-group" data-reveal aria-label={cat.labelZh}>
+              <h3>
+                {cat.label} · {cat.labelZh}
+              </h3>
+              <div class="part-options">
+                {
+                  cat.options.map((opt) => (
+                    <button
+                      type="button"
+                      class="part-option"
+                      data-cat={cat.id}
+                      data-opt={opt.id}
+                      data-socket={opt.socket ?? ''}
+                      aria-pressed="false"
+                    >
+                      <span class="radio" aria-hidden="true"></span>
+                      <span>
+                        <b>{opt.name}</b>
+                        <small>{opt.spec}</small>
+                      </span>
+                      <span class="check" aria-hidden="true">✓</span>
+                    </button>
+                  ))
+                }
+              </div>
+            </section>
+          ))
+        }
+
+        <section class="part-group builder-notes" data-reveal aria-label="备注">
+          <h3>NOTES · 备注</h3>
+          <textarea id="builder-notes" placeholder="用途、预算、已有配件，或想对店家说的话…"></textarea>
+        </section>
+      </div>
+
+      <aside class="build-sheet" data-reveal aria-label="配置单">
+        <span class="kicker">BUILD SHEET</span>
+        <h2>配置单<i>.</i></h2>
+        <div class="compat-warn" id="compat-warn" role="alert"></div>
+        <div class="sheet-rows" id="sheet-rows"></div>
+        <div class="sheet-actions">
+          <button type="button" class="btn-copy" id="btn-copy">复制配置单</button>
+          <button type="button" class="btn-clear" id="btn-clear">清空重选</button>
+        </div>
+        <p class="copy-feedback" id="copy-feedback" role="status" aria-live="polite"></p>
+      </aside>
+    </div>
+
+    <footer class="inner-footer"><span>BUILD IT YOUR WAY</span><b>MLINStudio</b></footer>
+  </main>
+</BaseLayout>
+
+<script>
+  const catLabels: Record<string, string> = {};
+  document.querySelectorAll('.part-group').forEach((group) => {
+    const h3 = group.querySelector('h3');
+    const opt = group.querySelector<HTMLButtonElement>('.part-option');
+    if (h3 && opt?.dataset.cat) catLabels[opt.dataset.cat] = h3.textContent?.trim() ?? opt.dataset.cat;
+  });
+
+  const rows = document.getElementById('sheet-rows') as HTMLElement;
+  const warn = document.getElementById('compat-warn') as HTMLElement;
+  const notes = document.getElementById('builder-notes') as HTMLTextAreaElement;
+  const feedback = document.getElementById('copy-feedback') as HTMLElement;
+
+  const selected = (catId: string): HTMLButtonElement | null =>
+    document.querySelector(`.part-option[data-cat="${catId}"][aria-pressed="true"]`);
+
+  const refresh = (): void => {
+    // 配置单行
+    rows.innerHTML = '';
+    Object.keys(catLabels).forEach((catId) => {
+      const opt = selected(catId);
+      const row = document.createElement('div');
+      row.className = 'sheet-row' + (opt ? '' : ' is-empty');
+      const label = document.createElement('span');
+      label.textContent = catLabels[catId];
+      const value = document.createElement('b');
+      if (opt) {
+        const name = opt.querySelector('b')?.textContent ?? '';
+        const spec = opt.querySelector('small')?.textContent ?? '';
+        value.textContent = spec ? `${name}（${spec}）` : name;
+      } else {
+        value.textContent = '未选择';
+      }
+      row.append(label, value);
+      rows.appendChild(row);
+    });
+
+    // CPU / 主板插槽兼容性
+    const cpu = selected('cpu');
+    const board = selected('board');
+    const cpuSocket = cpu?.dataset.socket ?? '';
+    const boardSocket = board?.dataset.socket ?? '';
+    if (cpuSocket && boardSocket && cpuSocket !== boardSocket) {
+      warn.textContent = `⚠ 插槽不匹配：CPU 是 ${cpuSocket}，主板是 ${boardSocket}，装不到一起。请更换其中之一。`;
+      warn.classList.add('show');
+    } else {
+      warn.classList.remove('show');
+    }
+  };
+
+  const pick = (catId: string, optId: string): void => {
+    document
+      .querySelectorAll(`.part-option[data-cat="${catId}"]`)
+      .forEach((el) => el.setAttribute('aria-pressed', el.getAttribute('data-opt') === optId ? 'true' : 'false'));
+    refresh();
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('.part-option').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.cat && btn.dataset.opt) pick(btn.dataset.cat, btn.dataset.opt);
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      try {
+        const picks = JSON.parse(btn.dataset.picks ?? '{}') as Record<string, string>;
+        Object.entries(picks).forEach(([catId, optId]) => pick(catId, optId));
+        feedback.textContent = `已套用预设：${btn.textContent?.trim()}`;
+      } catch {
+        feedback.textContent = '预设加载失败，请手动选择。';
+      }
+    });
+  });
+
+  document.getElementById('btn-clear')?.addEventListener('click', () => {
+    document.querySelectorAll('.part-option[aria-pressed="true"]').forEach((el) => el.setAttribute('aria-pressed', 'false'));
+    notes.value = '';
+    feedback.textContent = '';
+    refresh();
+  });
+
+  document.getElementById('btn-copy')?.addEventListener('click', async () => {
+    const lines = ['MLINStudio · 装机配置单', '━━━━━━━━━━━━'];
+    Object.keys(catLabels).forEach((catId) => {
+      const opt = selected(catId);
+      const name = opt?.querySelector('b')?.textContent ?? '未选择';
+      const spec = opt?.querySelector('small')?.textContent ?? '';
+      lines.push(`${catLabels[catId]}：${spec ? `${name}（${spec}）` : name}`);
+    });
+    if (notes.value.trim()) {
+      lines.push('━━━━━━━━━━━━', `备注：${notes.value.trim()}`);
+    }
+    lines.push('—— 生成于 mlin.pages.dev/builder');
+    const text = lines.join('\n');
+
+    try {
+      await navigator.clipboard.writeText(text);
+      feedback.textContent = '已复制到剪贴板 / COPIED';
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        feedback.textContent = '已复制到剪贴板 / COPIED';
+      } catch {
+        feedback.textContent = '复制失败，请手动选择配置单文字复制。';
+      }
+      ta.remove();
+    }
+  });
+
+  refresh();
+</script>

@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+---
+
+<BaseLayout title="留言板" description="MLINStudio 留言板：留下你的坐标，记录偶然经过的人。">
+  <main>
+    <PageIntro
+      index="04"
+      eyebrow="GUESTBOOK"
+      title="GUESTBOOK"
+      titleZh="留下坐标"
+      lede="开放留言区：留下一句话，记录你偶然经过这里。"
+    />
+
+    <div class="guestbook-board">
+      <form class="guestbook-form" id="gb-form" data-reveal>
+        <span class="kicker">NEW COORDINATE / 001</span>
+        <h2>LEAVE A<br />SIGNAL<i>.</i></h2>
+        <p class="hint">昵称最多 20 个字符，正文最多 200 个字符。</p>
+        <label>
+          <span>01 / NAME</span>
+          <input id="gb-name" name="name" maxlength="20" placeholder="你的昵称" autocomplete="off" required />
+          <b><span id="gb-name-count">0</span> / 20</b>
+        </label>
+        <label>
+          <span>02 / MESSAGE</span>
+          <textarea id="gb-message" name="message" maxlength="200" rows="5" placeholder="想说什么…" required></textarea>
+          <b><span id="gb-message-count">0</span> / 200</b>
+        </label>
+        <button type="submit" id="gb-submit"><span>发送留言</span><span aria-hidden="true">→</span></button>
+        <p class="form-notice" id="gb-notice" role="status" aria-live="polite"></p>
+      </form>
+
+      <section class="message-log" data-reveal aria-label="留言记录">
+        <header><span>MESSAGE LOG</span><b id="gb-total">—</b></header>
+        <div id="gb-list"></div>
+        <div class="board-status" id="gb-status" hidden>
+          <i aria-hidden="true"></i>
+          <strong id="gb-status-title">SIGNAL LOST</strong>
+          <p id="gb-status-text">暂时无法连接留言服务。</p>
+          <button type="button" id="gb-retry">重试 / RETRY</button>
+        </div>
+      </section>
+    </div>
+
+    <footer class="inner-footer"><span>EVERY SIGNAL FINDS ITS SHORE</span><b>MLINStudio</b></footer>
+  </main>
+</BaseLayout>
+
+<script>
+  type Message = { name: string; message: string; time: string };
+
+  const form = document.getElementById('gb-form') as HTMLFormElement;
+  const nameInput = document.getElementById('gb-name') as HTMLInputElement;
+  const messageInput = document.getElementById('gb-message') as HTMLTextAreaElement;
+  const nameCount = document.getElementById('gb-name-count') as HTMLElement;
+  const messageCount = document.getElementById('gb-message-count') as HTMLElement;
+  const submitBtn = document.getElementById('gb-submit') as HTMLButtonElement;
+  const notice = document.getElementById('gb-notice') as HTMLElement;
+  const list = document.getElementById('gb-list') as HTMLElement;
+  const status = document.getElementById('gb-status') as HTMLElement;
+  const statusText = document.getElementById('gb-status-text') as HTMLElement;
+  const total = document.getElementById('gb-total') as HTMLElement;
+  const retryBtn = document.getElementById('gb-retry') as HTMLButtonElement;
+
+  const escapeHtml = (s: string): string =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  const updateCounts = (): void => {
+    nameCount.textContent = String(nameInput.value.length);
+    messageCount.textContent = String(messageInput.value.length);
+  };
+  nameInput.addEventListener('input', updateCounts);
+  messageInput.addEventListener('input', updateCounts);
+
+  const showStatus = (text: string, retry: boolean): void => {
+    list.innerHTML = '';
+    status.hidden = false;
+    status.classList.toggle('is-offline', retry);
+    statusText.textContent = text;
+    retryBtn.style.display = retry ? '' : 'none';
+  };
+  const hideStatus = (): void => {
+    status.hidden = true;
+  };
+
+  const render = (messages: Message[]): void => {
+    hideStatus();
+    total.textContent = String(messages.length).padStart(2, '0');
+    list.innerHTML = messages
+      .map(
+        (m) => `
+        <article class="message-item">
+          <div><span>${escapeHtml(m.time)}</span><span>GUEST SIGNAL</span></div>
+          <h3>${escapeHtml(m.name)}</h3>
+          <p>${escapeHtml(m.message)}</p>
+        </article>`,
+      )
+      .join('');
+  };
+
+  const load = async (): Promise<void> => {
+    showStatus('正在连接留言服务…', false);
+    retryBtn.style.display = 'none';
+    try {
+      const res = await fetch('/api/messages', { cache: 'no-store' });
+      if (!res.ok) throw new Error('offline');
+      const data = (await res.json()) as Message[];
+      render(Array.isArray(data) ? data : []);
+    } catch {
+      showStatus('暂时无法连接留言服务，请稍后重试。', true);
+      total.textContent = '—';
+    }
+  };
+
+  retryBtn.addEventListener('click', () => void load());
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = nameInput.value.trim();
+    const message = messageInput.value.trim();
+    if (!name || !message || submitBtn.disabled) return;
+
+    submitBtn.disabled = true;
+    notice.textContent = '';
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, message }),
+      });
+      if (!res.ok) throw new Error('send failed');
+      nameInput.value = '';
+      messageInput.value = '';
+      updateCounts();
+      notice.textContent = '留言已记录 / RECORD SAVED';
+      await load();
+    } catch {
+      notice.textContent = '发送失败，请稍后重试。';
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  void load();
+</script>

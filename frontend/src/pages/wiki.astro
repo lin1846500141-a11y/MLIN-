@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import { wikiItems } from '../data/wiki';
+---
+
+<BaseLayout title="Wiki" description="MLIN Wiki：技术、视觉与实践的持续记录。">
+  <main>
+    <PageIntro
+      index="03"
+      eyebrow="INDEX & NOTES"
+      title="WIKI"
+      titleZh="索引与笔记"
+      lede="持续更新的个人索引：记录判断、过程和仍未完成的实验。"
+    />
+
+    <div class="wiki-grid">
+      {
+        wikiItems.map((item) => (
+          <article class="wiki-card" data-reveal>
+            <span class="idx">{item.index}</span>
+            <span class="tag">{item.tag}</span>
+            <h3>{item.title}</h3>
+            <p>{item.desc}</p>
+          </article>
+        ))
+      }
+    </div>
+
+    <footer class="inner-footer"><span>ARCHIVE GROWS OVER TIME</span><b>MLINStudio</b></footer>
+  </main>
+</BaseLayout>
