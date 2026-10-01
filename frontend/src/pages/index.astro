@@ -1,0 +1,89 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const panels = [
+  { id: 'xin', name: '心', py: 'XIN', src: '/characters/xin.jpg', alt: '白发狐耳角色「心」的立绘：红白服饰，暖金背景', accent: '#ffb03a' },
+  { id: 'feixue', name: '绯雪', py: 'FEIXUE', src: '/characters/feixue.jpg', alt: '白发剑士角色「绯雪」的立绘：红黑底色，挥刀的动态瞬间', accent: '#ff3b30' },
+  { id: 'qingxiao', name: '清宵', py: 'QINGXIAO', src: '/characters/qingxiao.jpg', alt: '角色「清宵」的立绘：蓝白冷色调', accent: '#7fd4ff' },
+];
+
+const routes = [
+  { no: '01', href: '/builder', title: 'BUILDER', zh: '装机配置器', desc: '亲手配一台电脑，生成配置单。' },
+  { no: '02', href: '/wiki', title: 'WIKI', zh: '索引与笔记', desc: '技术、视觉与实践的持续记录。' },
+  { no: '03', href: '/guestbook', title: 'GUESTBOOK', zh: '留下坐标', desc: '开放留言区，记录偶然经过的人。' },
+  { no: '04', href: '/about', title: 'ABOUT', zh: '个人档案', desc: '经历、能力，以及正在学习的方向。' },
+];
+---
+
+<BaseLayout
+  title="MLINStudio"
+  description="MLINStudio — 海岸信号档案馆：界面、机器、游戏与海。一份可以滚动的个人档案。"
+>
+  <main id="top">
+    {/* 三联画 hero */}
+    <section class="tri-hero" aria-label="MLINStudio 首页">
+      <div class="tri-panels">
+        {
+          panels.map((p) => (
+            <figure class="tri-panel" style={`--accent: ${p.accent}`}>
+              <img src={p.src} alt={p.alt} loading={p.id === 'xin' ? 'eager' : 'lazy'} />
+              <div class="tri-scrim" aria-hidden="true"></div>
+              <figcaption class="tri-name">
+                <span class="bar" aria-hidden="true"></span>
+                <span class="py">{p.py}</span>
+                <span class="zh">{p.name}</span>
+              </figcaption>
+            </figure>
+          ))
+        }
+      </div>
+
+      <div class="tri-title">
+        <h1 class="display">MLIN<i>.</i></h1>
+        <p>海岸信号档案馆 — COASTAL SIGNAL ARCHIVE</p>
+      </div>
+
+      <a class="tri-scroll" href="#manifesto" aria-label="向下滚动">
+        SCROLL <b aria-hidden="true">↓</b>
+      </a>
+    </section>
+
+    {/* 宣言 */}
+    <section class="manifesto" id="manifesto">
+      <span class="kicker" data-reveal>01 — STUDIO POSITION</span>
+      <h2>
+        <span class="line"><span>蓝是海，</span></span>
+        <span class="line"><span>红是<em>信号</em>。</span></span>
+      </h2>
+      <p class="note" data-reveal>
+        一份可以滚动的个人档案：界面、机器、游戏与海。
+        <br />克制地写，热烈地活。
+      </p>
+    </section>
+
+    {/* 宽幅间奏 */}
+    <figure class="interlude" aria-label="宽幅视觉间奏">
+      <img src="/characters/xin-wide.jpg" alt="「心」的宽幅立绘：红白身影横贯暖金背景" data-parallax loading="lazy" />
+    </figure>
+
+    {/* 入口 */}
+    <section class="routes" aria-label="站点入口">
+      <header class="routes-head">
+        <span class="kicker" data-reveal>02 — CONTINUE READING</span>
+        <h2 class="display" data-reveal>OPEN THE ARCHIVE</h2>
+      </header>
+      <nav aria-label="档案入口">
+        {
+          routes.map((r) => (
+            <a class="route-row" href={r.href} data-reveal>
+              <span class="no">{r.no}</span>
+              <strong class="display">{r.title}<i>{r.zh}</i></strong>
+              <span class="desc">{r.desc}</span>
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          ))
+        }
+      </nav>
+    </section>
+  </main>
+</BaseLayout>

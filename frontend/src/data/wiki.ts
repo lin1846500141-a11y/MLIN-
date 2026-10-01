@@ -1,6 +1,15 @@
-import type { WikiItem } from './types'
+export interface WikiItem {
+  index: string;
+  title: string;
+  desc: string;
+  tag: string;
+}
 
-export const wikiFallback: WikiItem[] = [
+/**
+ * Wiki 条目：构建时直接渲染（静态内容，无需请求 API）。
+ * /api/wiki（Pages Function）保留，用于外部调用兼容。
+ */
+export const wikiItems: WikiItem[] = [
   {
     index: '01',
     title: 'Coastal Editorial',
@@ -37,28 +46,4 @@ export const wikiFallback: WikiItem[] = [
     desc: '持续学习并实践 AI 辅助开发，把想法转化为可运行的作品。',
     tag: 'RESEARCH',
   },
-]
-
-export const capabilityNotes = [
-  {
-    no: '01',
-    kicker: 'DIGITAL / INTERFACE',
-    title: 'BUILDING\nSYSTEMS',
-    body: '把视觉概念转化为可以运行、可以维护，也可以继续生长的界面系统。',
-    meta: 'NEXT.JS · MOTION · UI',
-  },
-  {
-    no: '02',
-    kicker: 'PHYSICAL / MACHINE',
-    title: 'OPERATING\nMACHINES',
-    body: '来自硬件装配与生产设备的经验，让设计不只停留在屏幕表面。',
-    meta: 'PC · SMT · DIE BONDER',
-  },
-  {
-    no: '03',
-    kicker: 'ONGOING / PRACTICE',
-    title: 'RECORDING\nPROCESS',
-    body: 'MLIN Wiki 是持续更新的个人索引：记录判断、过程和仍未完成的实验。',
-    meta: 'WIKI · NOTES · ARCHIVE',
-  },
-]
+];
