@@ -499,36 +499,6 @@ button, input, textarea, select {
 .experience-section strong { font-family: var(--font-display); font-size: 30px; color: var(--faint); text-align: right; }
 @media (max-width: 640px) { .experience-section article { grid-template-columns: 1fr; } }
 
-/* ---------- Works ---------- */
-.works-list { padding: 0 var(--pad) clamp(60px, 7vw, 110px); }
-.work-item {
-  display: grid;
-  grid-template-columns: 80px 1fr;
-  gap: 8px 28px;
-  padding: clamp(28px, 4vw, 48px) 0;
-  border-top: 1px solid var(--line);
-}
-.work-item:last-child { border-bottom: 1px solid var(--line); }
-.work-item .no { font-family: var(--font-display); font-size: 30px; color: var(--faint); }
-.work-item .tag {
-  font-size: 12px;
-  letter-spacing: 0.28em;
-  color: var(--signal);
-  font-weight: 700;
-}
-.work-item h3 { font-family: var(--font-serif); font-weight: 900; font-size: clamp(26px, 3.4vw, 44px); margin: 10px 0 12px; }
-.work-item h3 .work-zh { font-size: 0.55em; font-weight: 400; color: var(--faint); margin-left: 14px; letter-spacing: 0.1em; }
-.work-item p { color: var(--muted); max-width: 640px; }
-.work-item .meta { grid-column: 2; margin-top: 14px; font-size: 12.5px; letter-spacing: 0.22em; color: var(--faint); }
-.work-item .todo-note {
-  grid-column: 2;
-  margin-top: 12px;
-  padding: 12px 16px;
-  border: 1px dashed var(--line);
-  color: var(--faint);
-  font-size: 13.5px;
-}
-
 /* ---------- Wiki ---------- */
 .wiki-grid {
   display: grid;

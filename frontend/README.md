@@ -27,10 +27,10 @@
 ```
 frontend/
 ├── src/
-│   ├── pages/          # 路由：index / about / works / builder / wiki / guestbook
+│   ├── pages/          # 路由：index / about / builder / wiki / guestbook
 │   ├── layouts/        # BaseLayout（SEO、字体、转场、动效入口）
 │   ├── components/     # SiteHeader / SiteFooter / PageIntro
-│   ├── data/           # 内容即数据：works.ts / wiki.ts / parts.ts（配件库与预设）
+│   ├── data/           # 内容即数据：wiki.ts / parts.ts（配件库与预设）
 │   ├── scripts/        # motion.ts — 全站动效语言（Lenis + GSAP，监听 astro:page-load）
 │   └── styles/         # global.css — 设计系统（token / 版式 / 组件样式）
 ├── public/             # 静态素材：characters（角色立绘）/ media / weapons
@@ -59,6 +59,5 @@ npm run build    # 输出 dist/
 
 ## 内容维护
 
-- **作品**：改 `src/data/works.ts`，把 `draft` 条目替换成真实代表作
 - **Wiki**：改 `src/data/wiki.ts`
 - **装机配置器**：改 `src/data/parts.ts`（配件库 / 预设），页面自动渲染；兼容性规则目前检查 CPU–主板插槽
