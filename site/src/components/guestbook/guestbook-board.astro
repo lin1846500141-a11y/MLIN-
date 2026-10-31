@@ -3,6 +3,10 @@
 // 差异：motion 动画不再有；数据仍走 /api/messages（Pages Functions），
 // 本地静态服务下会显示离线态，M3 把 functions/api/messages.ts 搬入 site/ 后即接通。
 // 初始渲染为 loading 态，与旧站首帧一致。
+// M3：Turnstile 预埋——配置了 PUBLIC_TURNSTILE_SITE_KEY 才渲染 widget 并携带 token；
+// 未配置时表单照常可用（后端对应跳过校验）。
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY
+const turnstileEnabled = Boolean(turnstileSiteKey)
 ---
 
 <section class="guestbook-board">
@@ -21,6 +25,17 @@
       <textarea name="message" rows="5" maxlength="200" placeholder="留下一条记录……" required></textarea>
       <b>0 / 200</b>
     </label>
+    {
+      turnstileEnabled && (
+        <div class="turnstile-slot">
+          <div
+            class="cf-turnstile"
+            data-sitekey={turnstileSiteKey}
+            data-theme="light"
+          />
+        </div>
+      )
+    }
     <button type="submit">
       <span>SEND RECORD</span>
       <b>↗</b>
@@ -62,6 +77,20 @@
   const statusOffline = log?.querySelector<HTMLElement>('.board-status.is-offline')
   // message-log 里有两个 div.board-status：offline 在前、quiet 在后
   const statusQuiet = log?.querySelectorAll<HTMLDivElement>('div.board-status:not(.is-offline)')[0]
+
+  // Turnstile：仅当表单里渲染了 .cf-turnstile widget 时才加载脚本并携带 token。
+  const turnstileWidget = form?.querySelector<HTMLElement>('.cf-turnstile')
+  if (turnstileWidget) {
+    const script = document.createElement('script')
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
+    script.async = true
+    script.defer = true
+    document.head.appendChild(script)
+  }
+  const getTurnstileToken = (): string => {
+    const api = (window as unknown as { turnstile?: { getResponse: () => string } }).turnstile
+    return api?.getResponse() ?? ''
+  }
 
   type Message = { name: string; message: string; time: string }
 
@@ -142,10 +171,11 @@
       setNotice('')
 
       try {
+        const token = turnstileWidget ? getTurnstileToken() : ''
         const response = await fetch('/api/messages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, message }),
+          body: JSON.stringify({ name, message, token }),
         })
         if (!response.ok) throw new Error('send failed')
         nameInput.value = ''
