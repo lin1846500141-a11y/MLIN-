@@ -1,9 +1,9 @@
 # 依赖
 node_modules/
 
-# 构建产物(由 CI/本地构建生成,不入库)
-frontend/.next/
-frontend/out/
+# 构建产物（由 CI/本地构建生成，不入库）
+site/dist/
+site/.astro/
 *.tsbuildinfo
 
 # 系统
