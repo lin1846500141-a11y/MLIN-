@@ -1,0 +1,110 @@
+---
+// /wiki/[slug]/ —— wiki 条目详情页（M4 增量，旧站没有）。
+// 每条 src/content/wiki/*.md 构建出一个独立静态页面，0 JS。
+import { render } from 'astro:content'
+import InnerPage from '../../layouts/InnerPage.astro'
+import { getWikiEntries, type WikiEntry } from '../../lib/wiki'
+
+export async function getStaticPaths() {
+  const entries = await getWikiEntries()
+  return entries.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      prev: entries[i - 1] ?? null,
+      next: entries[i + 1] ?? null,
+      total: entries.length,
+    },
+  }))
+}
+
+interface Props {
+  entry: WikiEntry
+  prev: WikiEntry | null
+  next: WikiEntry | null
+  total: number
+}
+
+const { entry, prev, next, total } = Astro.props
+const { Content } = await render(entry)
+const { title, tags, no, summary, updated } = entry.data
+const pad = (value: number) => String(value).padStart(2, '0')
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: title,
+  description: summary,
+  keywords: tags.join(', '),
+  inLanguage: 'zh-CN',
+  author: { '@type': 'Person', name: 'MLIN' },
+  publisher: { '@type': 'Organization', name: 'MLINStudio' },
+  mainEntityOfPage: new URL(`/wiki/${entry.id}/`, Astro.site).href,
+  ...(updated ? { dateModified: updated.toISOString() } : {}),
+}
+---
+
+<InnerPage
+  title={title}
+  description={summary}
+  pageClass="wiki-page wiki-entry-page"
+  footerNote={`RECORD ${no} / ${pad(total)}`}
+  ogType="article"
+  published={updated}
+>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+
+  <article class="wiki-entry">
+    <header class="wiki-entry-head">
+      <div class="page-intro-meta">
+        <span>{no} — ARCHIVE RECORD</span>
+        <a href="/wiki/">RETURN TO WIKI ↖</a>
+      </div>
+      <div class="wiki-entry-title">
+        <span class="wiki-entry-no">{no}</span>
+        <h1>{title}</h1>
+        <p>{summary}</p>
+        <ul class="wiki-entry-tags" aria-label="标签">
+          {tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      </div>
+    </header>
+
+    <div class="wiki-entry-body">
+      <aside class="wiki-entry-aside">
+        <dl>
+          <dt>RECORD</dt><dd>{no} / {pad(total)}</dd>
+          <dt>TAG</dt><dd>{tags.join(' · ')}</dd>
+          {updated && (<><dt>UPDATED</dt><dd>{updated.toISOString().slice(0, 10)}</dd></>)}
+          <dt>SOURCE</dt><dd>MLIN WIKI</dd>
+        </dl>
+      </aside>
+      <div class="wiki-entry-prose">
+        <Content />
+      </div>
+    </div>
+
+    <nav class="wiki-entry-nav" aria-label="相邻条目">
+      {
+        prev ? (
+          <a href={`/wiki/${prev.id}/`} rel="prev">
+            <span>← PREV / {prev.data.no}</span>
+            <b>{prev.data.title}</b>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        next ? (
+          <a href={`/wiki/${next.id}/`} rel="next" class="is-next">
+            <span>NEXT / {next.data.no} →</span>
+            <b>{next.data.title}</b>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+    </nav>
+  </article>
+</InnerPage>

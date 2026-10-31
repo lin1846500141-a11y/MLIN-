@@ -21,7 +21,7 @@ const pathname = normalize(Astro.url.pathname)
 
       <nav class="desktop-nav" aria-label="主导航">
         {navItems.map((item) => (
-          <a href={item.href} class={normalize(item.href) === pathname ? 'is-current' : undefined}>
+          <a href={item.href} class={normalize(item.href) === pathname || (normalize(item.href) !== '/' && pathname.startsWith(normalize(item.href) + '/')) ? 'is-current' : undefined}>
             {item.label}
           </a>
         ))}

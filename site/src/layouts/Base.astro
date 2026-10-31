@@ -7,16 +7,31 @@ interface Props {
   title?: string
   /** 页面描述，覆盖默认站描述 */
   description?: string
+  /** og:type，详情页传 article（M4） */
+  ogType?: 'website' | 'article'
+  /** og:image 路径（相对站点根），缺省为首屏海岸图 */
+  image?: string
+  /** 文章发布 / 更新时间（ogType=article 时输出） */
+  published?: Date
 }
 
 const {
   title,
   description = 'MLINStudio 的个人数字档案：界面、机器、实践与持续更新的记录。',
+  ogType = 'website',
+  image = '/media/coastal-archive-hero-v2.webp',
+  published,
 } = Astro.props
 
 const pageTitle = title
   ? `${title} — MLIN Wiki`
   : 'MLIN Wiki — Coastal Digital Archive'
+
+// M4 SEO：canonical 统一带尾斜杠（与 Astro 静态目录输出、sitemap 保持一致）
+const site = Astro.site ?? new URL('https://mlin.pages.dev')
+const path = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`
+const canonical = new URL(path, site).href
+const imageUrl = new URL(image, site).href
 ---
 
 <!doctype html>
@@ -31,9 +46,25 @@ const pageTitle = title
       name="keywords"
       content="MLIN Wiki, MLINStudio, portfolio, digital archive, web design"
     />
-    <meta property="og:title" content="MLIN Wiki — Coastal Digital Archive" />
-    <meta property="og:description" content="界面、机器、实践与持续更新的记录。" />
-    <meta property="og:type" content="website" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:site_name" content="MLINStudio" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1672" />
+    <meta property="og:image:height" content="941" />
+    {published && <meta property="article:modified_time" content={published.toISOString()} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <slot name="head" />
   </head>
   <body>
     <SiteHeader />

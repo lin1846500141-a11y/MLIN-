@@ -8,12 +8,16 @@ interface Props {
   pageClass?: string
   /** inner-footer 左侧文案；不传则不渲染页脚 */
   footerNote?: string
+  /** 透传给 Base 的 SEO 字段（M4） */
+  ogType?: 'website' | 'article'
+  published?: Date
 }
 
-const { title, description, pageClass = '', footerNote } = Astro.props
+const { title, description, pageClass = '', footerNote, ogType, published } = Astro.props
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} ogType={ogType} published={published}>
+  <slot name="head" slot="head" />
   <main class={`inner-page ${pageClass}`.trim()}>
     <slot />
     {

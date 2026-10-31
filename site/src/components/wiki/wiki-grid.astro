@@ -1,7 +1,13 @@
 ---
 // /wiki 列表 —— 自 frontend/components/wiki/wiki-grid.tsx 平移（M1）。
-// M3：数据改为运行时 fetch /api/wiki.json（构建期静态 json，非 Pages Function），
-// 标签 + 关键词筛选逻辑以 vanilla 脚本保留，DOM 结构与旧站一致（类名不变）。
+// M4：卡片改为构建期直出静态 HTML（数据源 src/content/wiki/*.md），每张卡片链接到
+// /wiki/[slug]/ 详情页；无需再 fetch，搜索引擎可直接抓取。标签 + 关键词筛选保留为
+// 约 1KB 的 vanilla 脚本，仅切换卡片显隐。DOM 结构与类名与旧站一致。
+import { getWikiEntries } from '../../lib/wiki'
+
+const entries = await getWikiEntries()
+const tags = ['ALL', ...new Set(entries.map((e) => e.data.tags[0].toUpperCase()))]
+const pad = (value: number) => String(value).padStart(2, '0')
 ---
 
 <section class="wiki-browser" aria-label="Wiki 条目">
@@ -9,126 +15,82 @@
     <label class="wiki-search">
       <span>SEARCH / 检索</span>
       <input type="search" placeholder="输入关键词" />
-      <b>--</b>
+      <b>{pad(entries.length)}</b>
     </label>
-    <div class="wiki-tags" aria-label="筛选标签"></div>
+    <div class="wiki-tags" aria-label="筛选标签">
+      {
+        tags.map((tag) => (
+          <button type="button" class:list={{ 'is-active': tag === 'ALL' }} data-tag={tag}>
+            {tag}
+          </button>
+        ))
+      }
+    </div>
     <span class="wiki-source">SOURCE / STATIC INDEX</span>
   </div>
 
-  <div class="wiki-grid"></div>
+  <div class="wiki-grid">
+    {
+      entries.map((entry) => (
+        <a
+          class="wiki-card"
+          href={`/wiki/${entry.id}/`}
+          data-tag={entry.data.tags[0].toUpperCase()}
+          data-search={`${entry.data.title} ${entry.data.summary} ${entry.data.tags.join(' ')}`.toLowerCase()}
+        >
+          <div class="wiki-card-meta">
+            <span>{entry.data.no}</span>
+            <b>{entry.data.tags[0]}</b>
+          </div>
+          <h2>{entry.data.title}</h2>
+          <p>{entry.data.summary}</p>
+          <footer>
+            <span>MLIN WIKI</span>
+            <i>↗</i>
+          </footer>
+        </a>
+      ))
+    }
+  </div>
 
   <div class="empty-state" style="display: none;">
     <strong>NO MATCHING RECORD</strong>
     <p>没有找到对应条目，试试更短的关键词。</p>
   </div>
-
-  <p class="board-status" role="status">LOADING INDEX…</p>
 </section>
 
 <script>
-  type WikiItem = { title: string; desc: string; tag: string; index?: string }
-
   const browser = document.querySelector<HTMLElement>('.wiki-browser')
   const input = browser?.querySelector<HTMLInputElement>('.wiki-search input')
   const count = browser?.querySelector<HTMLElement>('.wiki-search b')
-  const tagWrap = browser?.querySelector<HTMLElement>('.wiki-tags')
-  const grid = browser?.querySelector<HTMLElement>('.wiki-grid')
   const empty = browser?.querySelector<HTMLElement>('.empty-state')
-  const status = browser?.querySelector<HTMLElement>('.board-status')
 
-  if (browser && input && count && tagWrap && grid && empty) {
-    const pad = (value: number) => String(value).padStart(2, '0')
-    let items: WikiItem[] = []
+  if (browser && input && count && empty) {
+    const buttons = Array.from(browser.querySelectorAll<HTMLButtonElement>('.wiki-tags button'))
+    const cards = Array.from(browser.querySelectorAll<HTMLElement>('.wiki-card'))
     let tag = 'ALL'
-    let cards: HTMLElement[] = []
-
-    const searchBlob = (item: WikiItem) =>
-      `${item.title} ${item.desc} ${item.tag}`.toLowerCase()
-
-    const renderTags = () => {
-      const allTag = 'ALL'
-      const tags = [allTag, ...Array.from(new Set(items.map((i) => i.tag.toUpperCase())))]
-      tagWrap.textContent = ''
-      for (const item of tags) {
-        const button = document.createElement('button')
-        button.type = 'button'
-        button.textContent = item
-        button.classList.toggle('is-active', item === allTag)
-        button.addEventListener('click', () => {
-          tag = item
-          for (const other of tagWrap.querySelectorAll('button')) {
-            other.classList.toggle('is-active', other === button)
-          }
-          apply()
-        })
-        tagWrap.appendChild(button)
-      }
-    }
-
-    const renderCards = () => {
-      grid.textContent = ''
-      cards = items.map((item, index) => {
-        const article = document.createElement('article')
-        article.className = 'wiki-card'
-        article.dataset.tag = item.tag.toUpperCase()
-        article.dataset.search = searchBlob(item)
-
-        const meta = document.createElement('div')
-        meta.className = 'wiki-card-meta'
-        const number = document.createElement('span')
-        number.textContent = item.index ?? pad(index + 1)
-        const tagLabel = document.createElement('b')
-        tagLabel.textContent = item.tag
-        meta.append(number, tagLabel)
-
-        const title = document.createElement('h2')
-        title.textContent = item.title
-        const desc = document.createElement('p')
-        desc.textContent = item.desc
-
-        const footer = document.createElement('footer')
-        const source = document.createElement('span')
-        source.textContent = 'MLIN WIKI'
-        const arrow = document.createElement('i')
-        arrow.textContent = '↗'
-        footer.append(source, arrow)
-
-        article.append(meta, title, desc, footer)
-        grid.appendChild(article)
-        return article
-      })
-    }
 
     const apply = () => {
       const keyword = input.value.trim().toLowerCase()
       let visible = 0
       for (const card of cards) {
-        const matchesTag = tag === 'ALL' || card.dataset.tag === tag
-        const matchesKeyword = !keyword || (card.dataset.search ?? '').includes(keyword)
-        const show = matchesTag && matchesKeyword
+        const show =
+          (tag === 'ALL' || card.dataset.tag === tag) &&
+          (!keyword || (card.dataset.search ?? '').includes(keyword))
         card.style.display = show ? '' : 'none'
         if (show) visible += 1
       }
-      count.textContent = pad(visible)
+      count.textContent = String(visible).padStart(2, '0')
       empty.style.display = visible === 0 ? '' : 'none'
     }
 
-    const load = async () => {
-      try {
-        const response = await fetch('/api/wiki.json', { cache: 'no-store' })
-        if (!response.ok) throw new Error('load failed')
-        const data = (await response.json()) as WikiItem[]
-        items = Array.isArray(data) ? data : []
-        renderTags()
-        renderCards()
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        tag = button.dataset.tag ?? 'ALL'
+        for (const other of buttons) other.classList.toggle('is-active', other === button)
         apply()
-        if (status) status.remove()
-      } catch {
-        if (status) status.textContent = 'INDEX OFFLINE — 请稍后刷新重试。'
-      }
+      })
     }
-
     input.addEventListener('input', apply)
-    void load()
   }
 </script>
