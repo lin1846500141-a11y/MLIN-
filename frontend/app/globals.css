@@ -1119,6 +1119,7 @@ img {
 
 .route-title {
   display: flex;
+  min-width: 0;
   align-items: baseline;
   gap: 18px;
 }
@@ -1128,6 +1129,12 @@ img {
   font-weight: 800;
   letter-spacing: -.08em;
   line-height: .8;
+  white-space: nowrap;
+}
+
+/* 长单词（如 GUESTBOOK）降一档，避免大字压进描述列 */
+.route-title strong[data-long] {
+  font-size: clamp(38px, 5.5vw, 88px);
 }
 
 .route-title i {

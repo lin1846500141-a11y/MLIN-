@@ -1,0 +1,28 @@
+---
+import Base from './Base.astro'
+
+interface Props {
+  title?: string
+  description?: string
+  /** main 元素附加类名（如 wiki-page / guestbook-page / about-page） */
+  pageClass?: string
+  /** inner-footer 左侧文案；不传则不渲染页脚 */
+  footerNote?: string
+}
+
+const { title, description, pageClass = '', footerNote } = Astro.props
+---
+
+<Base title={title} description={description}>
+  <main class={`inner-page ${pageClass}`.trim()}>
+    <slot />
+    {
+      footerNote && (
+        <footer class="inner-footer">
+          <span>{footerNote}</span>
+          <b>MLINStudio</b>
+        </footer>
+      )
+    }
+  </main>
+</Base>

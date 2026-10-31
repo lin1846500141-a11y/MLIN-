@@ -1,0 +1,42 @@
+---
+import SiteHeader from '../components/site/site-header.astro'
+import '../styles/global.css'
+
+interface Props {
+  /** 页面标题，自动套用 “ — MLIN Wiki” 模板；缺省用站名默认标题（首页） */
+  title?: string
+  /** 页面描述，覆盖默认站描述 */
+  description?: string
+}
+
+const {
+  title,
+  description = 'MLINStudio 的个人数字档案：界面、机器、实践与持续更新的记录。',
+} = Astro.props
+
+const pageTitle = title
+  ? `${title} — MLIN Wiki`
+  : 'MLIN Wiki — Coastal Digital Archive'
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#eef5f7" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta
+      name="keywords"
+      content="MLIN Wiki, MLINStudio, portfolio, digital archive, web design"
+    />
+    <meta property="og:title" content="MLIN Wiki — Coastal Digital Archive" />
+    <meta property="og:description" content="界面、机器、实践与持续更新的记录。" />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <SiteHeader />
+    <slot />
+  </body>
+</html>
