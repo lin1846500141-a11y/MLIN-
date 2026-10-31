@@ -89,7 +89,7 @@ const routeLinks = [
           {
             topNavLinks.map((item) => (
               <a href={item.href} class={item.active ? 'is-active' : undefined}>
-                {item.label}
+                <span>{item.label}</span>
               </a>
             ))
           }

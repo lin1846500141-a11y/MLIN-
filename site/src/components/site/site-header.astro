@@ -1,83 +1,38 @@
 ---
-// 站点页头 —— 自 frontend/components/site/site-header.tsx 平移（M0）
-// 差异：React/motion 改 vanilla TS；首页（/）不渲染页头，与旧站行为一致。
-const navItems = [
-  { href: '/', label: 'Index' },
-  { href: '/wiki', label: 'Wiki' },
-  { href: '/guestbook', label: 'Guestbook' },
-  { href: '/about', label: 'About' },
+// 全站统一顶栏（与首页 MLINStudio + 贯穿细线 + HOME / ARCHIVE / PROJECTS / ABOUT 完全一致）
+// 首页（/）因内嵌在 hero-stage 动画层中，此处仅在非首页渲染。
+const topNavLinks = [
+  { href: '/', label: 'HOME' },
+  { href: '/wiki', label: 'ARCHIVE' },
+  { href: '/#field-heading', label: 'PROJECTS' },
+  { href: '/about', label: 'ABOUT' },
 ]
 
 const normalize = (path: string) => path.replace(/\/+$/, '') || '/'
 const pathname = normalize(Astro.url.pathname)
+
+const isActive = (href: string) => {
+  if (href.startsWith('/#')) return false
+  const norm = normalize(href)
+  if (norm === '/') return pathname === '/'
+  return pathname === norm || pathname.startsWith(`${norm}/`)
+}
 ---
 
 {
   pathname !== '/' && (
-    <header class="site-header">
-      <a class="site-name" href="/" aria-label="MLIN Wiki 首页">
-        <span>MLIN</span> Wiki
+    <header class="mlin-top-dock">
+      <a class="hero-brand" href="/" aria-label="MLINStudio 首页">
+        MLINStudio
       </a>
-
-      <nav class="desktop-nav" aria-label="主导航">
-        {navItems.map((item) => (
-          <a href={item.href} class={normalize(item.href) === pathname || (normalize(item.href) !== '/' && pathname.startsWith(normalize(item.href) + '/')) ? 'is-current' : undefined}>
-            {item.label}
-          </a>
-        ))}
-      </nav>
-
-      <div class="header-record">
-        <i /> FIELD LOG · 2026
-      </div>
-
-      <button class="menu-toggle" type="button" aria-label="打开菜单" aria-expanded="false">
-        <span>MENU</span>
-        <b>+</b>
-      </button>
-
-      <nav class="mobile-nav" aria-label="移动端导航">
-        {navItems.map((item, index) => (
-          <a href={item.href}>
-            <span>0{index + 1}</span>
-            {item.label}
+      <span class="hero-top-rule" aria-hidden="true" />
+      <nav class="hero-topnav" aria-label="主导航">
+        {topNavLinks.map((item) => (
+          <a href={item.href} class={isActive(item.href) ? 'is-active' : undefined}>
+            <span>{item.label}</span>
           </a>
         ))}
       </nav>
     </header>
   )
 }
-
-<style>
-  /* 移动端菜单开合 —— 原 motion/react 的 clipPath 动画改为 CSS 过渡（等价参数）。
-     收起时 visibility 延迟隐藏，等价于旧版 AnimatePresence 卸载语义（不可聚焦）。 */
-  .mobile-nav {
-    clip-path: inset(0 0 100% 0);
-    visibility: hidden;
-    transition:
-      clip-path 450ms cubic-bezier(0.76, 0, 0.24, 1),
-      visibility 0s linear 450ms;
-  }
-
-  .mobile-nav.is-open {
-    clip-path: inset(0 0 0% 0);
-    visibility: visible;
-    transition: clip-path 450ms cubic-bezier(0.76, 0, 0.24, 1);
-  }
-</style>
-
-<script>
-  const header = document.querySelector<HTMLElement>('.site-header')
-  const toggle = header?.querySelector<HTMLButtonElement>('.menu-toggle')
-  const nav = header?.querySelector<HTMLElement>('.mobile-nav')
-
-  toggle?.addEventListener('click', () => {
-    const open = nav?.classList.toggle('is-open') ?? false
-    toggle.setAttribute('aria-expanded', String(open))
-    toggle.setAttribute('aria-label', open ? '关闭菜单' : '打开菜单')
-    const label = toggle.querySelector('span')
-    const mark = toggle.querySelector('b')
-    if (label) label.textContent = open ? 'CLOSE' : 'MENU'
-    if (mark) mark.textContent = open ? '×' : '+'
-  })
-</script>

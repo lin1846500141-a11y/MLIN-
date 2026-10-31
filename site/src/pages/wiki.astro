@@ -1,22 +1,796 @@
 ---
-// /wiki —— 自 frontend/app/wiki/page.tsx 平移（M1）。
-import InnerPage from '../layouts/InnerPage.astro'
-import PageIntro from '../components/site/page-intro.astro'
-import WikiGrid from '../components/wiki/wiki-grid.astro'
+// /wiki —— DESKSPACE / 外设灵感库（BUILDER 客制化磁轴与硬件美学分享社区）
+// 1. 顶部采用与首页 1:1 统一的 MLINStudio + 贯穿细线 + HOME/ARCHIVE/PROJECTS/ABOUT 导航（带按压回弹与悬停微光交互），无左侧冗余图标栏、无旧版白底 WIKI INDEX。
+// 2. 顶部头图溶入 1779272120708 主视觉（/media/deskspace-banner.webp），配 DESKSPACE / 外设灵感库 + 右侧 GEAR / PEOPLE / A BETTER / DESK LIFE 标尺。
+// 3. 分类胶囊过滤栏（全部 / 机械键盘 / 鼠标 / 耳机 / 桌面搭配 / 客制化 / 氛围灯）+ 搜索框 + 布局切换。
+// 4. 评价晒单卡片全部采用 下载文件夹内的 9 张真实客制化键盘实拍图（rig-ice / rig-crimson / rig-cafe），模拟真实玩家多图晒单、RT 行程参数与玩家评价抽屉。
+import Base from '../layouts/Base.astro'
+
+type ReviewComment = {
+  user: string
+  role: string
+  time: string
+  text: string
+  photos?: string[]
+}
+
+type DeskCard = {
+  id: string
+  title: string
+  subtitle: string
+  category: string
+  span: 'wide' | 'normal' | 'compact'
+  cover: string
+  gallery: string[]
+  author: string
+  authorTag: string
+  avatar: string
+  likes: number
+  likesLabel: string
+  commentsCount: number
+  sharesCount?: number
+  specs: {
+    kit: string
+    switchName: string
+    rt: string
+    keycaps: string
+  }
+  reviewSummary: string
+  reviews: ReviewComment[]
+}
+
+const categories = [
+  { id: 'all', label: '全部' },
+  { id: '机械键盘', label: '机械键盘' },
+  { id: '客制化', label: '客制化' },
+  { id: '桌面搭配', label: '桌面搭配' },
+  { id: '鼠标', label: '鼠标' },
+  { id: '耳机', label: '耳机' },
+  { id: '氛围灯', label: '氛围灯' },
+]
+
+const deskCards: DeskCard[] = [
+  {
+    id: 'ocean-mirage',
+    title: 'Ocean Mirage · 冰川蓝铝坨坨实测',
+    subtitle: 'Apex Predator 65% · 阳极冰川蓝 / PVD 镜面刀纹配重',
+    category: '机械键盘',
+    span: 'wide',
+    cover: '/media/deskspace/rig-ice-1.webp',
+    gallery: [
+      '/media/deskspace/rig-ice-1.webp',
+      '/media/deskspace/rig-ice-2.webp',
+      '/media/deskspace/rig-ice-3.webp',
+    ],
+    author: 'Lin_Studio',
+    authorTag: '磁轴调校 / 铝坨坨玩家',
+    avatar: '/media/deskspace/rig-ice-2.webp',
+    likes: 1240,
+    likesLabel: '1.2K',
+    commentsCount: 86,
+    specs: {
+      kit: 'Apex Predator 65% CNC 阳极冰川蓝',
+      switchName: 'TTC 万磁王轴 · 35g 线性',
+      rt: 'WASD 0.15mm 触发 / 0.10mm 重置 · 零死区',
+      keycaps: '冰川海盐双色 PBT 原厂高度',
+    },
+    reviewSummary:
+      '到手第一感觉就是阳极冰蓝极其细腻，室内自然光下完全没有廉价感。换上万磁王轴重新校准后，无畏契约急停跟手度直接拉满，铝定回弹非常干脆，没有空腔音。',
+    reviews: [
+      {
+        user: 'Kuro_Val',
+        role: '赋能段位 · 0.1mm 死区党',
+        time: '2 小时前',
+        text: '这套冰蓝色实物比渲染图还顶，特别是背面那块 Apex Predator 铭牌和凯尔特暗纹，摆在大理石台面上质感无敌。求问老哥定位板用的是铝合金还是 FR4？',
+        photos: ['/media/deskspace/rig-ice-3.webp', '/media/deskspace/rig-ice-2.webp'],
+      },
+      {
+        user: 'MikuCoast',
+        role: '客制化收集控',
+        time: '5 小时前',
+        text: '抄了你的 RT 0.15mm 参数，急停确实不误触，打字声音是很干净的石子音！',
+      },
+    ],
+  },
+  {
+    id: 'light-breeze',
+    title: 'Light Breeze · 办公桌面上手流',
+    subtitle: '65% 冰蓝配列 · 极简大理石台面无线化',
+    category: '桌面搭配',
+    span: 'normal',
+    cover: '/media/deskspace/rig-ice-2.webp',
+    gallery: [
+      '/media/deskspace/rig-ice-2.webp',
+      '/media/deskspace/rig-ice-1.webp',
+      '/media/deskspace/rig-ice-3.webp',
+    ],
+    author: 'Aoi_Desk',
+    authorTag: '极简桌搭博主',
+    avatar: '/media/deskspace/rig-ice-1.webp',
+    likes: 892,
+    likesLabel: '892',
+    commentsCount: 64,
+    specs: {
+      kit: 'Apex 65 冰川蓝 · Gasket 软弹结构',
+      switchName: '磁玉 Pro 轴 · 36g 提前触底',
+      rt: '全局 0.4mm 舒适码字 + 游戏双模切换',
+      keycaps: '雾透冰川蓝拼白键帽',
+    },
+    reviewSummary:
+      '平时码字和修图占 70% 时间，特地调了一版偏柔和的 0.4mm 日用层。搭配浅色西装和冷调大理石桌面完全不会突兀，大键钢丝音调得很干净。',
+    reviews: [
+      {
+        user: 'Sora_77',
+        role: '前端开发',
+        time: '昨天',
+        text: '这桌搭色调太舒服了，冷白配冰蓝看着就降温，已经下单同款键帽。',
+        photos: ['/media/deskspace/rig-ice-1.webp'],
+      },
+    ],
+  },
+  {
+    id: 'polar-sound',
+    title: 'Polar Blade · 刀纹铭牌背板特写',
+    subtitle: 'PINCL RETRO 联名铭牌 · 镜面不锈钢阴刻背板',
+    category: '客制化',
+    span: 'compact',
+    cover: '/media/deskspace/rig-ice-3.webp',
+    gallery: [
+      '/media/deskspace/rig-ice-3.webp',
+      '/media/deskspace/rig-ice-1.webp',
+      '/media/deskspace/rig-ice-2.webp',
+    ],
+    author: 'ZeroCNC',
+    authorTag: 'CNC 结构控',
+    avatar: '/media/deskspace/rig-ice-3.webp',
+    likes: 768,
+    likesLabel: '768',
+    commentsCount: 52,
+    sharesCount: 52,
+    specs: {
+      kit: 'PINCL RETRO × Apex Predator 限量背板',
+      switchName: '佳达隆双轨磁珀轴',
+      rt: '0.10mm 极速触发 / 8000Hz 回报率',
+      keycaps: 'PBT 热升华极地蓝',
+    },
+    reviewSummary:
+      '单独把背面立起来拍一张——腰线折角做了一道高光倒角，刀剑暗纹蚀刻深度很足，摸上去有明显的金属肌理感，整机裸重直接飙到 2.1kg。',
+    reviews: [
+      {
+        user: 'MetalHead',
+        role: '铝坨坨发烧友',
+        time: '昨天',
+        text: '侧面那道斜切折线绝了，拿取的时候正好卡手位，细节满分。',
+        photos: ['/media/deskspace/rig-ice-3.webp'],
+      },
+    ],
+  },
+  {
+    id: 'my-chill-desk',
+    title: 'My Chill Desk · 暖调阳光冰晶 60%',
+    subtitle: '午后咖啡馆实拍 · 冰蓝水波纹半透键帽搭配',
+    category: '桌面搭配',
+    span: 'wide',
+    cover: '/media/deskspace/rig-cafe-1.webp',
+    gallery: [
+      '/media/deskspace/rig-cafe-1.webp',
+      '/media/deskspace/rig-cafe-2.webp',
+      '/media/deskspace/rig-cafe-3.webp',
+    ],
+    author: 'Claire_M',
+    authorTag: '生活美学 / 外设摄影',
+    avatar: '/media/deskspace/rig-cafe-2.webp',
+    likes: 1620,
+    likesLabel: '1.6K',
+    commentsCount: 128,
+    specs: {
+      kit: '云石白 60% 冰晶肌理外壳',
+      switchName: '凯华岚风磁轴 · 轻压力静音调校',
+      rt: '0.35mm 触发 / 动态键程 DKS 绑定',
+      keycaps: '纯白奶昔 + 琉璃蓝浮雕个性键帽',
+    },
+    reviewSummary:
+      '把 60% 小配列带去咖啡馆拍了一组自然光，奶白色外壳表面有淡淡的冰裂云石纹理，搭配四颗透明海浪浮雕大键，阳光透过去像冰块一样通透。',
+    reviews: [
+      {
+        user: 'LatteArt',
+        role: '60% 配列死忠',
+        time: '3 小时前',
+        text: '左 Shift 和回车那两颗蓝色透明浮雕键帽太点睛了！陽光打在上面直接把冷暖对比拉满。',
+        photos: ['/media/deskspace/rig-cafe-2.webp', '/media/deskspace/rig-cafe-3.webp'],
+      },
+      {
+        user: 'Ryu_switches',
+        role: '外设评测师',
+        time: '6 小时前',
+        text: '背面那块流沙金镂空配重跟正面冰蓝居然一点不违和，颜值天花板。',
+      },
+    ],
+  },
+  {
+    id: 'minimal-knob',
+    title: 'Olympus 60 · 暗夜红白条码磁轴',
+    subtitle: 'ΟΛΥΜΠΟΣ ΔΙΑΣ 60HE · 暖光皮垫俯拍实测',
+    category: '机械键盘',
+    span: 'normal',
+    cover: '/media/deskspace/rig-crimson-1.webp',
+    gallery: [
+      '/media/deskspace/rig-crimson-1.webp',
+      '/media/deskspace/rig-crimson-2.webp',
+      '/media/deskspace/rig-crimson-3.webp',
+    ],
+    author: 'Viper_FPS',
+    authorTag: 'CS2 / 瓦罗兰特重度玩家',
+    avatar: '/media/deskspace/rig-crimson-1.webp',
+    likes: 620,
+    likesLabel: '620',
+    commentsCount: 37,
+    sharesCount: 37,
+    specs: {
+      kit: 'Olympus 60 极昼白电泳铝合金',
+      switchName: '万磁王轴 RGB 导光柱版',
+      rt: 'WASD 0.12mm / 急停 Snappy Tappy 开启',
+      keycaps: 'XOVO 条码复古白红二色键帽',
+    },
+    reviewSummary:
+      '黑色荔枝纹皮垫配白红复古条码键帽，开一层淡淡的彩虹混光背光完全不刺眼。左上角希腊字母铭文很有辨识度，实战打瓦连续 4 小时手指不累。',
+    reviews: [
+      {
+        user: 'AimLab_Pro',
+        role: 'FPS 教练',
+        time: '4 小时前',
+        text: '这套条码 Tab 和 Backspace 键帽很有赛博工业味，配 60% 配列紧凑感拉满！',
+        photos: ['/media/deskspace/rig-crimson-3.webp'],
+      },
+    ],
+  },
+  {
+    id: 'crystal-pro',
+    title: 'Crystal Pro · 琉璃冰透侧角微距',
+    subtitle: '手工树脂流沙个性键帽 · 冰晶白边框微距实拍',
+    category: '客制化',
+    span: 'wide',
+    cover: '/media/deskspace/rig-cafe-2.webp',
+    gallery: [
+      '/media/deskspace/rig-cafe-2.webp',
+      '/media/deskspace/rig-cafe-1.webp',
+      '/media/deskspace/rig-cafe-3.webp',
+    ],
+    author: 'ResinCraft',
+    authorTag: '键帽手作人',
+    avatar: '/media/deskspace/rig-cafe-1.webp',
+    likes: 934,
+    likesLabel: '934',
+    commentsCount: 70,
+    specs: {
+      kit: '60% 珠光冰裂纹客制化套件',
+      switchName: '磁玉轴 · 厂润厚润卫星轴',
+      rt: '0.20mm 触发 / 0.15mm 抬起断触',
+      keycaps: '双层冰透树脂 + 蓝字微刻字符',
+    },
+    reviewSummary:
+      '近距离看这颗冰蓝色 Shift 的内部立体雕花，倒角做了圆润抛光，按下去不硌手指。外壳侧边的暗纹和空格键下沿的冰山涂装完全对齐。',
+    reviews: [
+      {
+        user: 'IceCube',
+        role: '键帽收藏家',
+        time: '1 天前',
+        text: '放大看外壳珠光漆面太毒了，这种半透蓝跟白键帽简直绝配。',
+        photos: ['/media/deskspace/rig-cafe-2.webp'],
+      },
+    ],
+  },
+  {
+    id: 'see-through',
+    title: 'Zeus Etch · 宙斯雷霆全幅蚀刻背板',
+    subtitle: '整块铝合金阳极银 CNC · 局部鎏金神话蚀刻',
+    category: '耳机',
+    span: 'normal',
+    cover: '/media/deskspace/rig-crimson-2.webp',
+    gallery: [
+      '/media/deskspace/rig-crimson-2.webp',
+      '/media/deskspace/rig-crimson-1.webp',
+      '/media/deskspace/rig-crimson-3.webp',
+    ],
+    author: 'Myth_Builder',
+    authorTag: '硬核改装玩家',
+    avatar: '/media/deskspace/rig-crimson-2.webp',
+    likes: 1120,
+    likesLabel: '1.1K',
+    commentsCount: 96,
+    specs: {
+      kit: 'Olympus 60 宙斯全幅激光精雕背板',
+      switchName: 'TTC 天王磁轴电竞版',
+      rt: '0.10mm 全键独立死区校准',
+      keycaps: 'PBT 闭口字符 · 红白撞色',
+    },
+    reviewSummary:
+      '平时翻过来擦键盘都忍不住多看两眼，整块银色底壳左边是鎏金宙斯头像与闪电纹，右边镌刻了整段铭文，脚贴做了内嵌防滑槽，稳如泰山。',
+    reviews: [
+      {
+        user: 'ForgeMaster',
+        role: '金属工艺控',
+        time: '1 天前',
+        text: '这背板刀路和鎏金分色太细腻了，完全是艺术品级别，舍不得撕保护膜。',
+        photos: ['/media/deskspace/rig-crimson-2.webp'],
+      },
+    ],
+  },
+  {
+    id: 'ambient-light',
+    title: 'Ambient Glow · 下灯位均匀度与镜面背板',
+    subtitle: 'RGB 柔光雾化定位板 + 镜面星轨配重实测',
+    category: '氛围灯',
+    span: 'normal',
+    cover: '/media/deskspace/rig-crimson-3.webp',
+    gallery: [
+      '/media/deskspace/rig-crimson-3.webp',
+      '/media/deskspace/rig-cafe-3.webp',
+      '/media/deskspace/rig-crimson-1.webp',
+    ],
+    author: 'NeonPulse',
+    authorTag: '桌面灯光师',
+    avatar: '/media/deskspace/rig-crimson-3.webp',
+    likes: 583,
+    likesLabel: '583',
+    commentsCount: 28,
+    specs: {
+      kit: '雾化 PC 均光定位板 + 镜面铜配重',
+      switchName: '全透导光柱磁轴 · 1680 万色',
+      rt: '0.15mm 极速模式 + 音乐律动灯效',
+      keycaps: '高含量 PBT 磨砂防打油',
+    },
+    reviewSummary:
+      '特意拍了微距看键帽缝隙间的漫反射，PC 定位板把 LED 灯珠原本刺眼的点光源完全打散成柔和的霓虹底光，夜晚关灯打游戏氛围感直接拉满。',
+    reviews: [
+      {
+        user: 'LumenDesk',
+        role: '氛围灯玩家',
+        time: '2 天前',
+        text: '这个雾化匀光效果比铝定好看太多了，红空格和蓝紫渐变完全没有灯珠颗粒感！',
+        photos: ['/media/deskspace/rig-crimson-3.webp', '/media/deskspace/rig-cafe-3.webp'],
+      },
+    ],
+  },
+]
 ---
 
-<InnerPage
-  title="Wiki Archive"
-  description="MLIN Wiki 的技术、视觉与实践索引。"
-  pageClass="wiki-page"
-  footerNote="END OF CURRENT INDEX"
+<Base
+  title="DESKSPACE / 外设灵感库"
+  description="精选客制化桌面与磁轴硬件美学分享社区 — 探索全球硬核玩家的纯粹冷调搭配灵感。"
+  image="/media/deskspace-banner.webp"
 >
-  <PageIntro
-    index="01"
-    eyebrow="OPEN ARCHIVE"
-    title={'WIKI<br /><i>INDEX</i>'}
-    description="这不是百科全书，而是一组仍在增加的个人索引。可以按标签浏览，也可以直接搜索。"
-    aside="VISUAL / MOTION / MACHINE / RESEARCH"
-  />
-  <WikiGrid />
-</InnerPage>
+  <main class="deskspace-page">
+    <!-- 顶部横幅：溶入 1779272120708 主视觉 + DESKSPACE / 外设灵感库 -->
+    <section class="desk-hero" aria-labelledby="desk-title">
+      <div class="desk-hero-art" aria-hidden="true">
+        <img
+          src="/media/deskspace-banner.webp"
+          alt=""
+          width="1920"
+          height="960"
+          loading="eager"
+          fetchpriority="high"
+        />
+        <div class="desk-hero-mask"></div>
+      </div>
+
+      <div class="desk-hero-inner">
+        <div class="desk-hero-copy">
+          <span class="desk-hero-tick" aria-hidden="true"></span>
+          <h1 id="desk-title">DESKSPACE / 外设灵感库</h1>
+          <p class="desk-hero-sub">精选客制化桌面与硬件美学分享社区</p>
+          <p class="desk-hero-desc">探索全球硬核玩家的纯粹冷调搭配灵感</p>
+        </div>
+
+        <aside class="desk-hero-aside" aria-hidden="true">
+          <i></i>
+          <span>GEAR</span>
+          <span>PEOPLE</span>
+          <span>A BETTER</span>
+          <span>DESK LIFE</span>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 分类胶囊栏 + 搜索框 + 布局切换 -->
+    <section class="desk-toolbar" aria-label="外设分类与搜索">
+      <div class="desk-tabs" role="tablist" aria-label="外设分类">
+        {
+          categories.map((cat, idx) => (
+            <button
+              type="button"
+              role="tab"
+              class={`desk-tab ${idx === 0 ? 'is-active' : ''}`}
+              aria-selected={idx === 0 ? 'true' : 'false'}
+              data-category={cat.id}
+            >
+              {cat.label}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="desk-tools-right">
+        <label class="desk-search">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.8" />
+            <path d="M16.2 16.2L21 21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <input
+            id="desk-search-input"
+            type="search"
+            placeholder="搜索套件、磁轴、RT参数、玩家晒单..."
+            autocomplete="off"
+          />
+        </label>
+
+        <button
+          type="button"
+          class="desk-layout-btn"
+          id="desk-layout-toggle"
+          aria-label="切换卡片网格密度"
+          title="切换网格视图"
+        >
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+            <rect x="2.5" y="3.5" width="4" height="3" rx="0.8" fill="currentColor" />
+            <rect x="8" y="3.5" width="9.5" height="3" rx="0.8" fill="currentColor" />
+            <rect x="2.5" y="8.5" width="4" height="3" rx="0.8" fill="currentColor" />
+            <rect x="8" y="8.5" width="9.5" height="3" rx="0.8" fill="currentColor" />
+            <rect x="2.5" y="13.5" width="4" height="3" rx="0.8" fill="currentColor" />
+            <rect x="8" y="13.5" width="9.5" height="3" rx="0.8" fill="currentColor" />
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- 晒单评价卡片网格（2行4列不对称杂志磨砂毛玻璃卡片） -->
+    <section class="desk-grid-wrap" aria-label="玩家外设晒单与评价">
+      <div class="desk-grid" id="desk-grid">
+        {
+          deskCards.map((card) => (
+            <article
+              class={`desk-card span-${card.span}`}
+              data-category={card.category}
+              data-card-id={card.id}
+              data-search={`${card.title} ${card.subtitle} ${card.category} ${card.specs.kit} ${card.specs.switchName} ${card.specs.rt} ${card.reviewSummary}`.toLowerCase()}
+            >
+              <div class="desk-card-media" data-open-review={card.id} role="button" tabindex="0" aria-label={`查看 ${card.title} 晒单评价与实拍图`}>
+                <img
+                  class="desk-card-img"
+                  src={card.cover}
+                  alt={card.title}
+                  width="600"
+                  height="380"
+                  loading="lazy"
+                />
+                <div class="desk-card-shade" aria-hidden="true" />
+
+                <!-- 右上角三点按钮 + 相册缩略图切换指示 -->
+                <div class="desk-card-top">
+                  <span class="desk-card-badge">{card.specs.switchName.split('·')[0].trim()}</span>
+                  <button
+                    type="button"
+                    class="desk-card-more"
+                    data-open-review={card.id}
+                    aria-label="查看晒单配置与玩家真实评价"
+                    title="点击查看完整多图评价与 RT 配置"
+                  >
+                    •••
+                  </button>
+                </div>
+
+                <!-- 卡片内部多图缩略快速预览条（鼠标悬停或点击小图即刻切换实拍角度） -->
+                <div class="desk-card-thumbs" aria-label="实拍多图切换">
+                  {card.gallery.map((photo, pIdx) => (
+                    <button
+                      type="button"
+                      class={`desk-thumb-dot ${pIdx === 0 ? 'is-active' : ''}`}
+                      data-photo={photo}
+                      aria-label={`切换实拍图 ${pIdx + 1}`}
+                    >
+                      <img src={photo} alt="" loading="lazy" />
+                    </button>
+                  ))}
+                </div>
+
+                <!-- 图片左下方标题与真实评价摘要 -->
+                <div class="desk-card-caption">
+                  <div class="desk-card-title-row">
+                    <h2>{card.title.split('·')[0].trim()}</h2>
+                    <span class="desk-card-sub">{card.title.split('·')[1]?.trim()}</span>
+                  </div>
+                  <p class="desk-card-snippet">{card.reviewSummary}</p>
+                </div>
+              </div>
+
+              <!-- 底部作者头像 + 点赞 + 评论数 + 分享 -->
+              <footer class="desk-card-foot">
+                <button type="button" class="desk-author" data-open-review={card.id}>
+                  <img src={card.avatar} alt={card.author} width="26" height="26" loading="lazy" />
+                  <span class="desk-author-name">{card.author}</span>
+                </button>
+
+                <div class="desk-metrics">
+                  <button
+                    type="button"
+                    class="desk-metric-btn desk-like-btn"
+                    data-likes={card.likes}
+                    aria-pressed="false"
+                    aria-label="点赞晒单"
+                  >
+                    <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+                      <path
+                        d="M12 20.4l-1.45-1.32C5.4 14.36 2 11.28 2 7.5 2 4.42 4.42 2 7.5 2c1.74 0 3.41.81 4.5 2.09C13.09 2.81 14.76 2 16.5 2 19.58 2 22 4.42 22 7.5c0 3.78-3.4 6.86-8.55 11.54L12 20.4z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                      />
+                    </svg>
+                    <span>{card.likesLabel}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="desk-metric-btn desk-comment-btn"
+                    data-open-review={card.id}
+                    aria-label="查看玩家评论"
+                  >
+                    <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+                      <path
+                        d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span>{card.commentsCount}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="desk-metric-btn desk-share-btn"
+                    data-open-review={card.id}
+                    aria-label="分享配置单"
+                  >
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                      <circle cx="18" cy="5" r="3" fill="none" stroke="currentColor" stroke-width="1.8" />
+                      <circle cx="6" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8" />
+                      <circle cx="18" cy="19" r="3" fill="none" stroke="currentColor" stroke-width="1.8" />
+                      <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" fill="none" stroke="currentColor" stroke-width="1.8" />
+                    </svg>
+                  </button>
+                </div>
+              </footer>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <footer class="desk-footer">
+      <span>DESKSPACE / MAGNETIC SWITCH &amp; CUSTOM GEAR COMMUNITY</span>
+      <strong>MLINStudio</strong>
+    </footer>
+
+    <!-- 点击任一卡片弹出的「玩家实拍多图 + 硬件配置铭牌 + 真实评价」磨砂毛玻璃详情抽屉 -->
+    <div class="desk-modal-backdrop" id="desk-modal" hidden>
+      <div class="desk-modal-panel" role="dialog" aria-modal="true" aria-labelledby="desk-modal-title">
+        <button type="button" class="desk-modal-close" id="desk-modal-close" aria-label="关闭晒单详情">
+          ✕
+        </button>
+
+        <div class="desk-modal-grid">
+          <div class="desk-modal-gallery">
+            <div class="desk-modal-main-img">
+              <img id="desk-modal-img" src="/media/deskspace/rig-ice-1.webp" alt="" />
+            </div>
+            <div class="desk-modal-thumbs" id="desk-modal-thumbs"></div>
+          </div>
+
+          <div class="desk-modal-info">
+            <div class="desk-modal-head">
+              <span class="desk-modal-cat" id="desk-modal-cat">机械键盘</span>
+              <h3 id="desk-modal-title">Ocean Mirage</h3>
+              <p class="desk-modal-sub" id="desk-modal-sub"></p>
+            </div>
+
+            <dl class="desk-modal-specs" id="desk-modal-specs"></dl>
+
+            <div class="desk-modal-review-box">
+              <h4>机主实测体验</h4>
+              <p id="desk-modal-summary"></p>
+            </div>
+
+            <div class="desk-modal-comments">
+              <h4>玩家真实晒图评价</h4>
+              <div class="desk-modal-comment-list" id="desk-modal-comments"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script
+      id="desk-cards-data"
+      type="application/json"
+      set:html={JSON.stringify(deskCards)}
+    />
+  </main>
+</Base>
+
+<script>
+  const cardsDataEl = document.getElementById('desk-cards-data')
+  const cardsData = cardsDataEl ? JSON.parse(cardsDataEl.textContent || '[]') : []
+  const cardsById = new Map<string, any>(cardsData.map((c: any) => [c.id, c]))
+
+  // 1. 分类胶囊筛选 + 搜索过滤
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.desk-tab'))
+  const searchInput = document.getElementById('desk-search-input') as HTMLInputElement | null
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('.desk-card'))
+  let activeCategory = 'all'
+
+  const applyFilter = () => {
+    const q = (searchInput?.value || '').trim().toLowerCase()
+    cards.forEach((card) => {
+      const cat = card.dataset.category || ''
+      const hay = card.dataset.search || ''
+      const catMatch = activeCategory === 'all' || cat === activeCategory
+      const qMatch = !q || hay.includes(q)
+      card.style.display = catMatch && qMatch ? '' : 'none'
+    })
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      tabs.forEach((t) => {
+        t.classList.remove('is-active')
+        t.setAttribute('aria-selected', 'false')
+      })
+      tab.classList.add('is-active')
+      tab.setAttribute('aria-selected', 'true')
+      activeCategory = tab.dataset.category || 'all'
+      applyFilter()
+    })
+  })
+
+  searchInput?.addEventListener('input', applyFilter)
+
+  // 2. 网格密度切换
+  const grid = document.getElementById('desk-grid')
+  const layoutBtn = document.getElementById('desk-layout-toggle')
+  layoutBtn?.addEventListener('click', () => {
+    grid?.classList.toggle('is-uniform')
+    layoutBtn.classList.toggle('is-active')
+  })
+
+  // 3. 卡片内部多图缩略点切换（不用打开弹窗也能直接在卡片上切 3 张实拍图）
+  cards.forEach((card) => {
+    const mainImg = card.querySelector<HTMLImageElement>('.desk-card-img')
+    const thumbBtns = Array.from(card.querySelectorAll<HTMLButtonElement>('.desk-thumb-dot'))
+    thumbBtns.forEach((btn) => {
+      const switchPhoto = (e: Event) => {
+        e.stopPropagation()
+        const photo = btn.dataset.photo
+        if (photo && mainImg) {
+          mainImg.src = photo
+          thumbBtns.forEach((b) => b.classList.remove('is-active'))
+          btn.classList.add('is-active')
+        }
+      }
+      btn.addEventListener('click', switchPhoto)
+      btn.addEventListener('mouseenter', switchPhoto)
+    })
+  })
+
+  // 4. 点赞微交互（带弹性反馈）
+  document.querySelectorAll<HTMLButtonElement>('.desk-like-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const liked = btn.getAttribute('aria-pressed') === 'true'
+      const next = !liked
+      btn.setAttribute('aria-pressed', String(next))
+      btn.classList.toggle('is-liked', next)
+      const base = Number(btn.dataset.likes || 0)
+      const countEl = btn.querySelector('span')
+      if (countEl && base < 1000) {
+        countEl.textContent = String(next ? base + 1 : base)
+      }
+    })
+  })
+
+  // 5. 点击卡片打开玩家真实晒单详情弹窗
+  const modal = document.getElementById('desk-modal')
+  const modalClose = document.getElementById('desk-modal-close')
+  const modalImg = document.getElementById('desk-modal-img') as HTMLImageElement | null
+  const modalThumbs = document.getElementById('desk-modal-thumbs')
+  const modalCat = document.getElementById('desk-modal-cat')
+  const modalTitle = document.getElementById('desk-modal-title')
+  const modalSub = document.getElementById('desk-modal-sub')
+  const modalSpecs = document.getElementById('desk-modal-specs')
+  const modalSummary = document.getElementById('desk-modal-summary')
+  const modalComments = document.getElementById('desk-modal-comments')
+
+  const openModal = (id: string) => {
+    const data = cardsById.get(id)
+    if (!data || !modal) return
+    if (modalImg) modalImg.src = data.gallery[0] || data.cover
+    if (modalCat) modalCat.textContent = data.category
+    if (modalTitle) modalTitle.textContent = data.title
+    if (modalSub) modalSub.textContent = data.subtitle
+    if (modalSummary) modalSummary.textContent = data.reviewSummary
+
+    if (modalThumbs) {
+      modalThumbs.innerHTML = (data.gallery || [])
+        .map(
+          (src: string, idx: number) =>
+            `<button type="button" class="desk-modal-thumb ${idx === 0 ? 'is-active' : ''}" data-src="${src}"><img src="${src}" alt="实拍图 ${idx + 1}" /></button>`,
+        )
+        .join('')
+      modalThumbs.querySelectorAll<HTMLButtonElement>('.desk-modal-thumb').forEach((tBtn) => {
+        tBtn.addEventListener('click', () => {
+          if (modalImg && tBtn.dataset.src) modalImg.src = tBtn.dataset.src
+          modalThumbs.querySelectorAll('.desk-modal-thumb').forEach((b) => b.classList.remove('is-active'))
+          tBtn.classList.add('is-active')
+        })
+      })
+    }
+
+    if (modalSpecs && data.specs) {
+      modalSpecs.innerHTML = `
+        <div><dt>套件外壳</dt><dd>${data.specs.kit}</dd></div>
+        <div><dt>搭载磁轴</dt><dd>${data.specs.switchName}</dd></div>
+        <div><dt>RT 行程参数</dt><dd>${data.specs.rt}</dd></div>
+        <div><dt>键帽搭配</dt><dd>${data.specs.keycaps}</dd></div>
+      `
+    }
+
+    if (modalComments) {
+      modalComments.innerHTML = (data.reviews || [])
+        .map(
+          (r: any) => `
+          <div class="desk-comment-item">
+            <div class="desk-comment-meta">
+              <strong>${r.user}</strong>
+              <span>${r.role}</span>
+              <time>${r.time}</time>
+            </div>
+            <p>${r.text}</p>
+            ${
+              r.photos && r.photos.length
+                ? `<div class="desk-comment-photos">${r.photos.map((p: string) => `<img src="${p}" alt="买家评价晒图" />`).join('')}</div>`
+                : ''
+            }
+          </div>
+        `,
+        )
+        .join('')
+    }
+
+    modal.hidden = false
+    document.body.style.overflow = 'hidden'
+  }
+
+  const closeModal = () => {
+    if (!modal) return
+    modal.hidden = true
+    document.body.style.overflow = ''
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-open-review]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const id = el.dataset.openReview
+      if (id) openModal(id)
+    })
+  })
+
+  modalClose?.addEventListener('click', closeModal)
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal()
+  })
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && !modal.hidden) closeModal()
+  })
+</script>
