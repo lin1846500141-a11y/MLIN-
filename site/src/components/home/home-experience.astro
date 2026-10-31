@@ -12,7 +12,15 @@ import Crosshair from './crosshair.astro'
 import { capabilityNotes } from '../../lib/archive-data'
 
 const archiveLetters = 'ARCHIVE'.split('')
-const r2AudioUrl = import.meta.env.PUBLIC_SIGNAL_FM_URL ?? ''
+// R2 音频基础路径：默认走同源 Pages Function /api/audio（读取 MLIN_R2 桶，无 CORS 跨域限制），
+// 也可通过 PUBLIC_SIGNAL_FM_URL 覆盖为 R2 公开域名。
+const r2AudioBase = (import.meta.env.PUBLIC_SIGNAL_FM_URL ?? '/api/audio').replace(/\/+$/, '')
+
+const signalFmTracks = [
+  { file: 'lemonade.mp3', title: 'aespa — LEMONADE' },
+  { file: 'mengxing.mp3', title: 'handsome lau / HYPEEZY / 冯泳 — 梦醒' },
+  { file: 'luoshengmen.mp3', title: '梨冻紧 / Wiz_H张子豪 — 罗生门（Follow）' },
+]
 
 const topNavLinks = [
   { href: '/', label: 'HOME', active: true },
@@ -113,9 +121,10 @@ const routeLinks = [
           class="hero-waveform"
           type="button"
           data-playing="false"
-          data-r2-src={r2AudioUrl}
-          aria-label="播放 / 暂停 SIGNAL FM (R2 音频)"
-          title={r2AudioUrl ? '点击播放 / 暂停 SIGNAL FM' : 'SIGNAL FM（待绑定 R2 曲目 URL）'}
+          data-r2-base={r2AudioBase}
+          data-tracks={JSON.stringify(signalFmTracks)}
+          aria-label="播放 / 暂停 SIGNAL FM (R2 随机电台)"
+          title="SIGNAL FM — 点击随机播放 / 暂停"
         >
           <span class="hero-waveform-bars" aria-hidden="true">
             {
@@ -128,17 +137,7 @@ const routeLinks = [
         <span class="hero-bottom-sep" aria-hidden="true"></span>
         <span class="hero-bottom-coord">35.2149° N / 139.3467° E</span>
         <span class="hero-bottom-rule" aria-hidden="true"></span>
-        {
-          r2AudioUrl && (
-            <audio
-              id="hero-r2-audio"
-              src={r2AudioUrl}
-              crossorigin="anonymous"
-              preload="none"
-              loop
-            />
-          )
-        }
+        <audio id="hero-r2-audio" crossorigin="anonymous" preload="none" />
       </div>
 
       <aside class="hero-index hero-chrome" aria-label="Coastal Signal Archive 索引">
@@ -396,20 +395,57 @@ const routeLinks = [
         freqData = new Uint8Array(new ArrayBuffer(analyser.frequencyBinCount))
       }
 
-      waveBtn.addEventListener('click', async () => {
-        if (!audioEl) {
-          // R2 曲目 URL 尚未配置时保持静止，不伪造假动画
-          return
-        }
-        try {
-          ensureAudioGraph()
-          if (audioCtx?.state === 'suspended') {
-            await audioCtx.resume()
+      // 随机播放队列（Fisher-Yates 洗牌，播完一首自动切下一首随机曲目，不连续重复）
+      type TrackItem = { file: string; title: string }
+      const r2Base = waveBtn.dataset.r2Base || '/api/audio'
+      let tracks: TrackItem[] = []
+      try {
+        tracks = JSON.parse(waveBtn.dataset.tracks || '[]') as TrackItem[]
+      } catch {
+        tracks = []
+      }
+      let queue: TrackItem[] = []
+      let currentFile = ''
+
+      const nextRandomTrack = (): TrackItem | null => {
+        if (tracks.length === 0) return null
+        if (queue.length === 0) {
+          queue = [...tracks]
+          for (let i = queue.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1))
+            ;[queue[i], queue[j]] = [queue[j], queue[i]]
           }
+          if (queue.length > 1 && queue[0].file === currentFile) {
+            ;[queue[0], queue[queue.length - 1]] = [queue[queue.length - 1], queue[0]]
+          }
+        }
+        const picked = queue.shift() ?? tracks[0]
+        currentFile = picked.file
+        return picked
+      }
+
+      const playRandom = async (forceNext = false) => {
+        if (!audioEl || tracks.length === 0) return
+        ensureAudioGraph()
+        if (audioCtx?.state === 'suspended') {
+          await audioCtx.resume()
+        }
+        if (!audioEl.src || forceNext) {
+          const picked = nextRandomTrack()
+          if (!picked) return
+          audioEl.src = `${r2Base}/${picked.file}`
+          waveBtn.title = `SIGNAL FM · ${picked.title}`
+        }
+        await audioEl.play()
+        waveBtn.dataset.playing = 'true'
+        tickWaveform()
+      }
+
+      waveBtn.addEventListener('click', async () => {
+        if (!audioEl) return
+        try {
           if (audioEl.paused) {
-            await audioEl.play()
-            waveBtn.dataset.playing = 'true'
-            tickWaveform()
+            await playRandom(false)
           } else {
             audioEl.pause()
             waveBtn.dataset.playing = 'false'
@@ -422,12 +458,17 @@ const routeLinks = [
       })
 
       audioEl?.addEventListener('pause', () => {
-        waveBtn.dataset.playing = 'false'
-        resetWaveBars()
+        if (!audioEl.ended) {
+          waveBtn.dataset.playing = 'false'
+          resetWaveBars()
+        }
       })
       audioEl?.addEventListener('ended', () => {
-        waveBtn.dataset.playing = 'false'
-        resetWaveBars()
+        // 一首播完自动随机切下一首
+        void playRandom(true).catch(() => {
+          waveBtn.dataset.playing = 'false'
+          resetWaveBars()
+        })
       })
     }
 
