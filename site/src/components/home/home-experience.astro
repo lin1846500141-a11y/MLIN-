@@ -1,11 +1,16 @@
 ---
-// 自 frontend/components/home/home-experience.tsx 平移（M1 静态版）。
-// M1 范围：DOM 结构与类名 1:1 对应；GSAP 开场/滚动叙事/鼠标视差在 M2 以孤岛脚本接入。
-// 静态化处理（见文末 <style> 注释）：
-//  - data-intro 固定为 complete（旧站由 GSAP 在开场完成后设置）
-//  - 旧站 <noscript> 的“稳定态”规则转为组件样式（shutters/launch 隐藏、标题/chrome 可见）
-//  - Next/Image fill 的内联定位转为组件样式
-//  - motion 的 whileHover(y:-8) 转为 CSS hover
+// 自 frontend/components/home/home-experience.tsx 平移（M1 静态版 + M2 动效孤岛）。
+// DOM 结构与类名 1:1 对应；本文件 <script> 为全部交互（无框架运行时）：
+//   - 开场字幕时间线 / 滚动叙事 / 鼠标视差：逐段照搬旧站 useGSAP + useEffect
+//   - Lenis：按 §2/M2 定案在首页启用，集成写法照搬 frontend/components/motion/
+//     smooth-scroll-provider.tsx（lenis.raf 挂 gsap.ticker、scroll → ScrollTrigger.update、
+//     lagSmoothing(0)）。注意：旧站首页实际走原生滚动（provider 对 '/' 关闭 Lenis），
+//     本站按计划启用；验收如手感有出入，删掉下方 Lenis 一段即可回到原生滚动。
+//   - field-plate 悬停：motion whileHover(y:-8, 350ms) 改 GSAP mouseenter/leave
+//     （GSAP 入场后行内 transform 会覆盖 CSS :hover，故不能走 CSS 过渡）
+//   - bug2：hero 大字 scaleX 改为运行时实测（--hero-word-fit），见脚本 fitHeroWord
+//   - 无 JS 回退：<noscript> 内联样式（同旧站）；reduced-motion 回退在 global.css
+import 'lenis/dist/lenis.css'
 import Crosshair from './crosshair.astro'
 import { capabilityNotes } from '../../lib/archive-data'
 
@@ -36,7 +41,7 @@ const routeLinks = [
 ]
 ---
 
-<main class="home" id="top" data-intro="complete">
+<main class="home" id="top" data-intro="running">
   <section class="hero-scroll" aria-label="MLIN Wiki 海岸档案首页">
     <div class="hero-stage">
       <div class="hero-scene" aria-hidden="true">
@@ -132,6 +137,10 @@ const routeLinks = [
       <button class="hero-launch-skip" type="button" aria-label="跳过首页启动动画">
         SKIP INTRO <span>↗</span>
       </button>
+
+      <noscript>
+        <style is:inline>{`.hero-shutters,.hero-launch-word,.hero-launch-skip{display:none!important}.hero-title-letter,.hero-chrome{opacity:1!important;visibility:visible!important}`}</style>
+      </noscript>
 
       <div class="sr-only">
         <p>MLINStudio Coastal Signal Archive.</p>
@@ -259,21 +268,9 @@ const routeLinks = [
 </main>
 
 <style>
-  /* M1 静态稳定态 —— 等价于旧站 <noscript> 与 prefers-reduced-motion 的规则。
-     M2 接入 GSAP 开场后移除本段，初始隐藏态交还 global.css + GSAP 管理。 */
-  .hero-shutters,
-  .hero-launch-word,
-  .hero-launch-skip {
-    display: none !important;
-  }
-
-  .hero-title-letter,
-  .hero-chrome {
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
-
-  /* Next/Image fill 输出的内联定位（absolute + 100%）转为组件样式 */
+  /* Next/Image fill 输出的内联定位（absolute + 100%）转为组件样式。
+     M1 的静态稳定态规则已移除：初始隐藏态由 global.css 默认值 + GSAP 管理，
+     无 JS 走上方 <noscript>，reduced-motion 走 global.css 媒体查询。 */
   .hero-scene-image,
   .hero-foreground-image {
     position: absolute;
@@ -288,13 +285,297 @@ const routeLinks = [
     width: 100%;
     height: 100%;
   }
-
-  /* motion whileHover(y:-8, 350ms) 的 CSS 等价；M2 GSAP 接管行内 transform 后自然失效 */
-  .field-plate {
-    transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .field-plate:hover {
-    transform: translateY(-8px);
-  }
 </style>
+
+<script>
+  // 首页动效孤岛 —— 逐段平移 frontend/components/home/home-experience.tsx（M2）。
+  // GSAP + ScrollTrigger + Lenis 仅本页加载；无 React。
+  import { gsap } from 'gsap'
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
+  import Lenis from 'lenis'
+
+  gsap.registerPlugin(ScrollTrigger)
+
+  const home = document.querySelector<HTMLElement>('.home')
+
+  if (home) {
+    // ---- bug2：hero 大字运行时实测宽度 ----
+    // .hero-word-scale 的 scaleX 魔法常数(.56/.57)按桌面 29vw 字号标定，移动端改
+    // 36vw 后在部分设备字体下 "ARCHIVE" 会被 hero-stage 裁成 "ARCHI"。实测文字
+    // 自然宽，以「文字右缘不超出 hero-stage」为界计算拟合值：仅当它小于当前
+    // 常数（真会被裁）时写 --hero-word-fit 收窄，否则移除变量回退常数——
+    // 未裁场景与线上逐像素一致（线上 1440 实测标题本就只填容器 88%）。
+    // 纯布局修正（非动效），reduced-motion 下也执行。
+    const fitHeroWord = () => {
+      document.querySelectorAll<HTMLElement>('.hero-word-scale').forEach((word) => {
+        const stage = word.closest<HTMLElement>('.hero-stage')
+        if (!stage) return
+        const prevWidth = word.style.width
+        const prevTransform = word.style.transform
+        word.style.width = 'max-content'
+        word.style.transform = 'none'
+        const natural = word.offsetWidth
+        word.style.width = prevWidth
+        word.style.transform = prevTransform
+        // 先移除变量再读常数，避免上一轮写入的拟合值污染断点常数（.56/.57）
+        word.style.removeProperty('--hero-word-fit')
+        const matrix = getComputedStyle(word).transform
+        const constant = matrix.startsWith('matrix(')
+          ? parseFloat(matrix.slice(7))
+          : Number.NaN
+        const textLeft = word.getBoundingClientRect().left - stage.getBoundingClientRect().left
+        const room = stage.clientWidth - textLeft
+        const fit = natural > 0 && room > 0 ? room / natural : 1
+        if (Number.isFinite(constant) && fit < constant) {
+          word.style.setProperty('--hero-word-fit', fit.toFixed(4))
+        }
+      })
+    }
+    fitHeroWord()
+    window.addEventListener('resize', fitHeroWord)
+    document.fonts.ready.then(fitHeroWord)
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // ---- Lenis 平滑滚动（集成写法照搬 smooth-scroll-provider.tsx）----
+      const lenis = new Lenis({
+        duration: 1.05,
+        lerp: 0.09,
+        smoothWheel: true,
+        wheelMultiplier: 0.9,
+        touchMultiplier: 1.05,
+        anchors: true,
+      })
+      lenis.on('scroll', ScrollTrigger.update)
+      gsap.ticker.add((time) => lenis.raf(time * 1000))
+      gsap.ticker.lagSmoothing(0)
+
+      const stage = home.querySelector<HTMLElement>('.hero-stage')
+
+      // ---- 鼠标视差（仅精确指针；容器 transform 的 520ms CSS 过渡负责平滑）----
+      if (stage && window.matchMedia('(pointer: fine)').matches) {
+        let frame = 0
+        const updateParallax = (event: PointerEvent) => {
+          cancelAnimationFrame(frame)
+          frame = requestAnimationFrame(() => {
+            const bounds = stage.getBoundingClientRect()
+            const x = (event.clientX - bounds.left) / bounds.width - 0.5
+            const y = (event.clientY - bounds.top) / bounds.height - 0.5
+
+            stage.style.setProperty('--hero-back-x', `${x * -8}px`)
+            stage.style.setProperty('--hero-back-y', `${y * -5}px`)
+            stage.style.setProperty('--hero-front-x', `${x * 15}px`)
+            stage.style.setProperty('--hero-front-y', `${y * 9}px`)
+          })
+        }
+
+        const resetParallax = () => {
+          stage.style.setProperty('--hero-back-x', '0px')
+          stage.style.setProperty('--hero-back-y', '0px')
+          stage.style.setProperty('--hero-front-x', '0px')
+          stage.style.setProperty('--hero-front-y', '0px')
+        }
+
+        stage.addEventListener('pointermove', updateParallax)
+        stage.addEventListener('pointerleave', resetParallax)
+      }
+
+      // ---- 开场字幕时间线（数值逐项照搬旧站）----
+      const launchLetters = gsap.utils.toArray<HTMLElement>('.hero-launch-letter')
+      const titleLetters = gsap.utils.toArray<HTMLElement>('.hero-title-letter')
+      const shutters = gsap.utils.toArray<HTMLElement>('.hero-shutter')
+      const launchOffsets = [64, -48, 78, -64, 54, -72, 42]
+      const launchRotations = [-2.4, 1.8, -1.2, 2.1, -1.7, 1.4, -0.8]
+
+      const intro = gsap.timeline({
+        defaults: { overwrite: 'auto' },
+        onComplete: () => home.setAttribute('data-intro', 'complete'),
+      })
+
+      launchLetters.forEach((letter, index) => {
+        const landingAt = 0.12 + index * 0.22
+
+        intro
+          .fromTo(
+            letter,
+            {
+              autoAlpha: 0,
+              scale: 6.8 - index * 0.18,
+              y: launchOffsets[index],
+              rotationZ: launchRotations[index],
+              z: 360,
+              filter: 'blur(13px)',
+            },
+            {
+              autoAlpha: 1,
+              scale: 1,
+              y: 0,
+              rotationZ: 0,
+              z: 0,
+              filter: 'blur(0px)',
+              duration: 0.72,
+              ease: 'expo.out',
+            },
+            landingAt,
+          )
+          .to(
+            shutters[index],
+            { yPercent: -102, duration: 0.62, ease: 'power4.inOut' },
+            landingAt + 0.3,
+          )
+          .to(titleLetters[index], { autoAlpha: 1, duration: 0.12 }, landingAt + 0.62)
+          .to(letter, { autoAlpha: 0, duration: 0.14, ease: 'power2.out' }, landingAt + 0.68)
+      })
+
+      intro
+        .to('.hero-scene-image', { scale: 1, duration: 1.1, ease: 'power3.out' }, 0.7)
+        .fromTo(
+          '.hero-chrome',
+          { autoAlpha: 0, y: 12 },
+          { autoAlpha: 1, y: 0, duration: 0.62, stagger: 0.045, ease: 'power3.out' },
+          1.82,
+        )
+        .to('.hero-launch-skip', { autoAlpha: 0, duration: 0.2 }, 1.92)
+        .set('.hero-shutters, .hero-launch-word', { autoAlpha: 0 }, 2.28)
+
+      const skipIntro = () => intro.progress(1)
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') skipIntro()
+      })
+      home.querySelector('.hero-launch-skip')?.addEventListener('click', skipIntro)
+
+      // ---- 滚动叙事（hero 段 scrub 0.8，数值照搬）----
+      const hero = home.querySelector<HTMLElement>('.hero-scroll')
+      if (hero) {
+        gsap
+          .timeline({
+            scrollTrigger: {
+              trigger: hero,
+              start: 'top top',
+              end: 'bottom bottom',
+              scrub: 0.8,
+            },
+          })
+          .to('.hero-scene-image', { scale: 1.085, yPercent: 1.8, ease: 'none' }, 0)
+          .to('.hero-foreground-image', { scale: 1.13, yPercent: 2.8, ease: 'none' }, 0)
+          .to('.hero-title-final', { yPercent: -15, opacity: 0.18, ease: 'none' }, 0.08)
+          .to('.hero-topbar, .hero-archive-label', { opacity: 0, y: -18, ease: 'none' }, 0.12)
+          .to('.hero-index', { xPercent: 105, ease: 'power2.in' }, 0.42)
+          .fromTo(
+            '.hero-blue-wipe',
+            { scaleY: 0 },
+            { scaleY: 1, transformOrigin: 'bottom center', ease: 'power2.inOut' },
+            0.7,
+          )
+      }
+
+      gsap.from('.manifesto-line span', {
+        yPercent: 110,
+        stagger: 0.08,
+        duration: 1.15,
+        ease: 'power4.out',
+        scrollTrigger: {
+          trigger: '.manifesto-copy',
+          start: 'top 72%',
+        },
+      })
+
+      // ---- field plates：入场 + 悬停（motion whileHover 的 GSAP 等价）----
+      gsap.utils.toArray<HTMLElement>('.field-plate').forEach((plate, index) => {
+        gsap.from(plate, {
+          y: 90,
+          opacity: 0,
+          rotate: index % 2 === 0 ? -1.2 : 1.2,
+          duration: 1.1,
+          ease: 'power3.out',
+          clearProps: 'transform,opacity',
+          scrollTrigger: {
+            trigger: plate,
+            start: 'top 88%',
+          },
+        })
+
+        plate.addEventListener('mouseenter', () =>
+          gsap.to(plate, { y: -8, duration: 0.35, ease: 'power4.out', overwrite: 'auto' }),
+        )
+        plate.addEventListener('mouseleave', () =>
+          gsap.to(plate, { y: 0, duration: 0.35, ease: 'power4.out', overwrite: 'auto' }),
+        )
+      })
+
+      gsap.utils.toArray<HTMLElement>('.route-row').forEach((row) => {
+        gsap.from(row, {
+          clipPath: 'inset(0 100% 0 0)',
+          duration: 1,
+          ease: 'power3.inOut',
+          scrollTrigger: { trigger: row, start: 'top 90%' },
+        })
+      })
+
+      // ---- 右侧 FIELD INDEX 进度轨 ----
+      const progressCurrent = home.querySelector<HTMLElement>('.home-progress-current')
+      const progressSections = [
+        { selector: '.manifesto-section', number: '02' },
+        { selector: '.field-section', number: '03' },
+        { selector: '.routes-section', number: '04' },
+      ]
+
+      gsap.fromTo(
+        '.home-progress-rail',
+        { autoAlpha: 0, x: 18 },
+        {
+          autoAlpha: 1,
+          x: 0,
+          duration: 0.5,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.manifesto-section',
+            start: 'top 86%',
+            toggleActions: 'play none none reverse',
+          },
+        },
+      )
+
+      gsap.fromTo(
+        '.home-progress-fill',
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.manifesto-section',
+            start: 'top bottom',
+            endTrigger: '.routes-section',
+            end: 'bottom 55%',
+            scrub: 0.35,
+          },
+        },
+      )
+
+      gsap.to('.home-progress-rail', {
+        autoAlpha: 0,
+        y: -12,
+        duration: 0.35,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: '.home-footer',
+          start: 'top 88%',
+          toggleActions: 'play none none reverse',
+        },
+      })
+
+      progressSections.forEach(({ selector, number }) => {
+        ScrollTrigger.create({
+          trigger: selector,
+          start: 'top 56%',
+          end: 'bottom 56%',
+          onEnter: () => {
+            if (progressCurrent) progressCurrent.textContent = number
+          },
+          onEnterBack: () => {
+            if (progressCurrent) progressCurrent.textContent = number
+          },
+        })
+      })
+    }
+  }
+</script>

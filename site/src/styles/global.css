@@ -277,7 +277,8 @@ img {
 .hero-word-scale {
   display: block;
   width: 178%;
-  transform: scaleX(.56);
+  /* 首页脚本实测文字宽度后写 --hero-word-fit；缺省回退为旧站手工标定值（bug2） */
+  transform: scaleX(var(--hero-word-fit, .56));
   transform-origin: left top;
 }
 
@@ -1771,7 +1772,7 @@ img {
 
   .hero-word-scale {
     width: 176%;
-    transform: scaleX(.57);
+    transform: scaleX(var(--hero-word-fit, .57));
   }
 
   .hero-grid {

@@ -92,6 +92,10 @@ MLIN-/
   移动端菜单 vanilla 脚本开合验证通过。首页 route-title 已按 >6 字符补 data-long（bug1 收口）。
   注：home/manifesto 等用 svh 高度的区块在 IAB 整页截图里有拼接伪影，本地与线上同伪影，不影响对比
 - **M2** 首页动效移植：开场字幕时间线 + 滚动叙事 + Lenis + 鼠标视差；顺带修两个已知 bug（见 §9）（验收：三档截图 + 动画手感）
+  — ✅ 2026-11-01 完成：typecheck 0 错误 + build 4 页，首页 JS 51.75KB gz（无框架运行时）。
+  开场帧/完成态/滚动叙事/进度轨 02-04/视差公式/锚点逐项数值比对通过；390/1000/1440 三档截图与线上一致。
+  bug2 修法落地为「实测宽度、仅真会被 hero-stage 裁切时收窄」（线上 1440 标题实测本为 88% 填充，桌面常数保持 .56 逐像素不变）。
+  注：Lenis 按定案在首页启用（旧站首页实为原生滚动），脚本内一段可回退；动画手感待用户本地体验确认
 - **M3** guestbook 接回 Functions（原文件搬入）+ wiki 静态 json + Turnstile 预埋（验收：留言可发可读）
 - **M4** wiki 迁 `.md` + `/wiki/[slug]` 详情页（旧站没有的增量）+ sitemap/robots/favicon/og/canonical 全套 SEO（验收：每条 wiki 有独立 URL）
 - **M5** 用户在 Cloudflare Pages 后台把构建根目录 `frontend`→`site`、输出目录 `out`→`dist`，合 main 部署，稳定 24h 后删 `frontend/`
