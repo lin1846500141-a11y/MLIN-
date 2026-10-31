@@ -97,7 +97,9 @@ MLIN-/
   bug2 修法落地为「实测宽度、仅真会被 hero-stage 裁切时收窄」（线上 1440 标题实测本为 88% 填充，桌面常数保持 .56 逐像素不变）。
   注：Lenis 按定案在首页启用（旧站首页实为原生滚动），脚本内一段可回退；动画手感待用户本地体验确认
 - **M3** guestbook 接回 Functions（原文件搬入）+ wiki 静态 json + Turnstile 预埋（验收：留言可发可读）
+  — ✅ 2026-11-01 完成：Pages Function + 模拟 `MLIN_KV` 全链路联调（503/200/201/400/403）通过；`/wiki` 静态 json 与 `/guestbook` 表单读写验证通过，Turnstile `reset()` 与 400/403 提示已收口
 - **M4** wiki 迁 `.md` + `/wiki/[slug]` 详情页（旧站没有的增量）+ sitemap/robots/favicon/og/canonical 全套 SEO（验收：每条 wiki 有独立 URL）
+  — ✅ 2026-11-01 完成：`astro check` 0 错误 + build 10 页通过；6 篇 `src/content/wiki/*.md` 对应 6 个独立 `/wiki/[slug]/` 静态页（0 业务 JS + Article JSON-LD），`/wiki` 卡片改为构建期静态直出（筛选脚本缩至 757B），`canonical`/`og`/`twitter`/`favicon.svg`/`robots.txt`/`sitemap-0.xml` 全部就位；已合入 `main` 并推送
 - **M5** 用户在 Cloudflare Pages 后台把构建根目录 `frontend`→`site`、输出目录 `out`→`dist`，合 main 部署，稳定 24h 后删 `frontend/`
 - 后续功能序：**首页 UI 爆改（Miku 新首屏）→ BUILDER 晒单社区 → PC 配置单 → SIGNAL FM**
 - 提交规范：分支 `refactor/astro-m0` 这样按里程碑命名；默认只推分支，合 main 由用户操作

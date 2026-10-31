@@ -87,10 +87,10 @@ const turnstileEnabled = Boolean(turnstileSiteKey)
     script.defer = true
     document.head.appendChild(script)
   }
-  const getTurnstileToken = (): string => {
-    const api = (window as unknown as { turnstile?: { getResponse: () => string } }).turnstile
-    return api?.getResponse() ?? ''
-  }
+  type TurnstileApi = { getResponse: () => string; reset: () => void }
+  const getTurnstile = () => (window as unknown as { turnstile?: TurnstileApi }).turnstile
+  const getTurnstileToken = (): string => getTurnstile()?.getResponse() ?? ''
+  const resetTurnstile = () => getTurnstile()?.reset()
 
   type Message = { name: string; message: string; time: string }
 
@@ -177,6 +177,14 @@ const turnstileEnabled = Boolean(turnstileSiteKey)
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, message, token }),
         })
+        if (response.status === 400 || response.status === 403) {
+          setNotice(
+            response.status === 403
+              ? '人机校验未通过，请重试。'
+              : '请检查昵称（≤20字）与正文（≤200字）。',
+          )
+          return
+        }
         if (!response.ok) throw new Error('send failed')
         nameInput.value = ''
         messageInput.value = ''
@@ -187,6 +195,7 @@ const turnstileEnabled = Boolean(turnstileSiteKey)
         showStatus('offline')
         setNotice('暂时无法连接留言服务，请稍后重试。')
       } finally {
+        if (turnstileWidget) resetTurnstile()
         form.dataset.sending = 'false'
         submitLabel.textContent = 'SEND RECORD'
       }
