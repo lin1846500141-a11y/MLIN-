@@ -1,0 +1,22 @@
+---
+// /wiki —— 自 frontend/app/wiki/page.tsx 平移（M1）。
+import InnerPage from '../layouts/InnerPage.astro'
+import PageIntro from '../components/site/page-intro.astro'
+import WikiGrid from '../components/wiki/wiki-grid.astro'
+---
+
+<InnerPage
+  title="Wiki Archive"
+  description="MLIN Wiki 的技术、视觉与实践索引。"
+  pageClass="wiki-page"
+  footerNote="END OF CURRENT INDEX"
+>
+  <PageIntro
+    index="01"
+    eyebrow="OPEN ARCHIVE"
+    title={'WIKI<br /><i>INDEX</i>'}
+    description="这不是百科全书，而是一组仍在增加的个人索引。可以按标签浏览，也可以直接搜索。"
+    aside="VISUAL / MOTION / MACHINE / RESEARCH"
+  />
+  <WikiGrid />
+</InnerPage>

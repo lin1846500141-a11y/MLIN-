@@ -1,0 +1,83 @@
+---
+// /about —— 自 frontend/app/about/page.tsx 平移（M1）。
+import InnerPage from '../layouts/InnerPage.astro'
+import PageIntro from '../components/site/page-intro.astro'
+
+const skills = [
+  ['01', 'PC HARDWARE', '电脑配置 / 台式机组装', '根据用途搭配硬件，完成整机装配。'],
+  ['02', 'SMT EQUIPMENT', '贴片机操作', '松下、西门子、富士贴片机。'],
+  ['03', 'DIE BONDER', '固晶机操作', '新益昌固晶机。'],
+  ['04', 'AI DEVELOPMENT', 'AI 开发', '持续学习，把想法做成可以运行的作品。'],
+]
+---
+
+<InnerPage
+  title="About"
+  description="关于 MLINStudio：硬件、设备与 AI 开发实践。"
+  pageClass="about-page"
+  footerNote="RECORD TO BE CONTINUED"
+>
+  <PageIntro
+    index="03"
+    eyebrow="PERSONNEL FILE"
+    title={'ABOUT<br /><i>MLIN</i>'}
+    description="会配电脑，也会操作生产线设备。现在正把对机器的理解，慢慢延伸到 AI 与界面开发。"
+    aside="GUANGDONG / CHINA"
+  />
+
+  <section class="about-portrait" aria-label="个人简介">
+    <div class="about-photo">
+      <img
+        src="/media/coastal-hero.webp"
+        alt="沿海小镇与蓝色海面"
+        width="1672"
+        height="941"
+        loading="lazy"
+      />
+      <span>PLACE / SOUTH COAST</span>
+      <b>22.16° N</b>
+    </div>
+    <div class="about-statement">
+      <span>PROFILE / 001</span>
+      <h2>OPERATOR.<br />BUILDER.<br /><i>AI CURIOUS.</i></h2>
+      <p>
+        这里记录的不是一个已经完成的身份，而是几条正在交汇的路线：实体设备、电脑硬件、AI 开发与视觉表达。
+      </p>
+    </div>
+  </section>
+
+  <section class="capability-section">
+    <header><span>01 — CAPABILITIES</span><h2>WHAT I CAN DO</h2><b>技能档案</b></header>
+    <div class="capability-list">
+      {
+        skills.map(([number, label, title, detail]) => (
+          <article>
+            <span>{number}</span>
+            <b>{label}</b>
+            <h3>{title}</h3>
+            <p>{detail}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="experience-section">
+    <header><span>02 — WORK HISTORY</span><h2>EXPERIENCE</h2><b>工作经历</b></header>
+    <article>
+      <time>2025.08 — 2026.05</time>
+      <div><h3>广东晶科电子有限公司</h3><p>GUANGDONG JINGKE ELECTRONICS CO., LTD.</p></div>
+      <strong>01</strong>
+    </article>
+  </section>
+</InnerPage>
+
+<style>
+  /* Next/Image fill 输出的内联定位（absolute + 100%）转为组件样式 */
+  .about-photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>

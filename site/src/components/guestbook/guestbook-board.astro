@@ -1,0 +1,169 @@
+---
+// 自 frontend/components/guestbook/guestbook-board.tsx 平移（M1）。
+// 差异：motion 动画不再有；数据仍走 /api/messages（Pages Functions），
+// 本地静态服务下会显示离线态，M3 把 functions/api/messages.ts 搬入 site/ 后即接通。
+// 初始渲染为 loading 态，与旧站首帧一致。
+---
+
+<section class="guestbook-board">
+  <form class="guestbook-form">
+    <div class="form-heading">
+      <span>NEW COORDINATE / 001</span>
+      <h2>LEAVE A<br />SIGNAL.</h2>
+      <p>留下一句话。昵称最多 20 个字符，正文最多 200 个字符。</p>
+    </div>
+    <label>
+      <span>01 / NAME</span>
+      <input name="name" type="text" maxlength="20" placeholder="你的昵称" required />
+    </label>
+    <label>
+      <span>02 / MESSAGE</span>
+      <textarea name="message" rows="5" maxlength="200" placeholder="留下一条记录……" required></textarea>
+      <b>0 / 200</b>
+    </label>
+    <button type="submit">
+      <span>SEND RECORD</span>
+      <b>↗</b>
+    </button>
+  </form>
+
+  <div class="message-log">
+    <header>
+      <span>RECEIVED SIGNALS</span>
+      <b>--</b>
+    </header>
+
+    <p class="board-status">CONNECTING TO ARCHIVE…</p>
+
+    <div class="board-status is-offline" style="display: none;">
+      <i></i>
+      <strong>MESSAGE SERVICE OFFLINE</strong>
+      <p>页面仍可浏览；留言服务连接后会自动恢复。</p>
+      <button type="button">RETRY ↻</button>
+    </div>
+
+    <div class="board-status" style="display: none;">
+      <strong>THE LOG IS QUIET.</strong>
+      <p>还没有留言，你可以成为第一条记录。</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  const board = document.querySelector('.guestbook-board')
+  const form = board?.querySelector<HTMLFormElement>('.guestbook-form')
+  const nameInput = form?.querySelector<HTMLInputElement>('input[name="name"]')
+  const messageInput = form?.querySelector<HTMLTextAreaElement>('textarea[name="message"]')
+  const counter = form?.querySelector('label b')
+  const submitLabel = form?.querySelector('button span')
+  const log = board?.querySelector('.message-log')
+  const logCount = log?.querySelector('header b')
+  const statusConnecting = log?.querySelector<HTMLElement>('p.board-status')
+  const statusOffline = log?.querySelector<HTMLElement>('.board-status.is-offline')
+  // message-log 里有两个 div.board-status：offline 在前、quiet 在后
+  const statusQuiet = log?.querySelectorAll<HTMLDivElement>('div.board-status:not(.is-offline)')[0]
+
+  type Message = { name: string; message: string; time: string }
+
+  const pad = (value: number) => String(value).padStart(2, '0')
+
+  const setNotice = (text: string) => {
+    if (!form) return
+    let notice = form.querySelector<HTMLParagraphElement>('.form-notice')
+    if (!notice) {
+      notice = document.createElement('p')
+      notice.className = 'form-notice'
+      notice.setAttribute('role', 'status')
+      form.appendChild(notice)
+    }
+    notice.textContent = text
+  }
+
+  const renderMessages = (messages: Message[]) => {
+    if (!log) return
+    for (const item of log.querySelectorAll('.message-item')) item.remove()
+
+    messages.forEach((item, index) => {
+      const article = document.createElement('article')
+      article.className = 'message-item'
+
+      const meta = document.createElement('div')
+      const number = document.createElement('span')
+      number.textContent = pad(index + 1)
+      const time = document.createElement('time')
+      time.textContent = item.time
+      meta.append(number, time)
+
+      const name = document.createElement('h3')
+      name.textContent = item.name
+      const body = document.createElement('p')
+      body.textContent = item.message
+
+      article.append(meta, name, body)
+      log.appendChild(article)
+    })
+
+    if (logCount) logCount.textContent = pad(messages.length)
+  }
+
+  const showStatus = (which: 'connecting' | 'offline' | 'quiet' | 'none') => {
+    if (statusConnecting) statusConnecting.style.display = which === 'connecting' ? '' : 'none'
+    if (statusOffline) statusOffline.style.display = which === 'offline' ? '' : 'none'
+    if (statusQuiet) statusQuiet.style.display = which === 'quiet' ? '' : 'none'
+  }
+
+  const load = async () => {
+    showStatus('connecting')
+    try {
+      const response = await fetch('/api/messages', { cache: 'no-store' })
+      if (!response.ok) throw new Error('offline')
+      const data = (await response.json()) as Message[]
+      const messages = Array.isArray(data) ? data : []
+      renderMessages(messages)
+      showStatus(messages.length === 0 ? 'quiet' : 'none')
+    } catch {
+      showStatus('offline')
+    }
+  }
+
+  if (form && nameInput && messageInput && counter && submitLabel) {
+    messageInput.addEventListener('input', () => {
+      counter.textContent = `${messageInput.value.length} / 200`
+    })
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      const name = nameInput.value.trim()
+      const message = messageInput.value.trim()
+      if (!name || !message || form.dataset.sending === 'true') return
+
+      form.dataset.sending = 'true'
+      submitLabel.textContent = 'TRANSMITTING…'
+      setNotice('')
+
+      try {
+        const response = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, message }),
+        })
+        if (!response.ok) throw new Error('send failed')
+        nameInput.value = ''
+        messageInput.value = ''
+        counter.textContent = '0 / 200'
+        setNotice('留言已记录 / RECORD SAVED')
+        await load()
+      } catch {
+        showStatus('offline')
+        setNotice('暂时无法连接留言服务，请稍后重试。')
+      } finally {
+        form.dataset.sending = 'false'
+        submitLabel.textContent = 'SEND RECORD'
+      }
+    })
+
+    statusOffline?.querySelector('button')?.addEventListener('click', () => void load())
+
+    void load()
+  }
+</script>

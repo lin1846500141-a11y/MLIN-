@@ -87,6 +87,10 @@ MLIN-/
   — ✅ 2026-11-01 完成：`astro check` 0 错误 + `npm run build` 通过（1 页 + sitemap，CSS 36.7KB 无 Tailwind）。
   页头为 vanilla TS（移动端菜单 clip-path 过渡替代 motion）；首页为占位页，M1 替换
 - **M1** 四页静态化，类名与现站一致（验收：与线上站 1440/1000/390 三档截图对比无明显回归）
+  — ✅ 2026-11-01 完成：typecheck 0 错误 + build 4 页；与线上 1440/1000/390 截图逐对比对
+  首页/manifesto/wiki/guestbook/about 全部一致（仅预期差异：wiki SOURCE 标签、guestbook 本地离线态）。
+  移动端菜单 vanilla 脚本开合验证通过。首页 route-title 已按 >6 字符补 data-long（bug1 收口）。
+  注：home/manifesto 等用 svh 高度的区块在 IAB 整页截图里有拼接伪影，本地与线上同伪影，不影响对比
 - **M2** 首页动效移植：开场字幕时间线 + 滚动叙事 + Lenis + 鼠标视差；顺带修两个已知 bug（见 §9）（验收：三档截图 + 动画手感）
 - **M3** guestbook 接回 Functions（原文件搬入）+ wiki 静态 json + Turnstile 预埋（验收：留言可发可读）
 - **M4** wiki 迁 `.md` + `/wiki/[slug]` 详情页（旧站没有的增量）+ sitemap/robots/favicon/og/canonical 全套 SEO（验收：每条 wiki 有独立 URL）

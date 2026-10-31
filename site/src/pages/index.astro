@@ -1,15 +1,10 @@
 ---
-// M0 占位首页：仅保证 / 可构建。
-// M1 时替换为四页静态化中的首页（home-experience 结构），M2 移植动效。
+// 首页 —— M1 静态版（自 frontend/app/page.tsx + home-experience.tsx 平移）。
+// M2 接入 GSAP 开场 + 滚动叙事 + 视差孤岛脚本。
 import Base from '../layouts/Base.astro'
+import HomeExperience from '../components/home/home-experience.astro'
 ---
 
-<Base>
-  <main class="home" id="top">
-    <p
-      style="padding: 20vh var(--page-pad); margin: 0; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em;"
-    >
-      MLIN v2 — SITE SCAFFOLD (M0)<br />首页内容将在 M1 四页静态化时迁入。
-    </p>
-  </main>
+<Base title="Coastal Signal Archive" description="MLINStudio 的海岸信号档案：界面、机器、实践与持续更新的记录。">
+  <HomeExperience />
 </Base>

@@ -1,0 +1,25 @@
+---
+// 自 frontend/components/site/page-intro.tsx 平移（M1）。
+// title 是受控 HTML 片段（如 'WIKI<br /><i>INDEX</i>'），来源为本仓模板，非用户输入。
+interface Props {
+  index: string
+  eyebrow: string
+  title: string
+  description: string
+  aside: string
+}
+
+const { index, eyebrow, title, description, aside } = Astro.props
+---
+
+<header class="page-intro">
+  <div class="page-intro-meta">
+    <span>{index} — {eyebrow}</span>
+    <a href="/">RETURN TO INDEX ↖</a>
+  </div>
+  <div class="page-intro-title">
+    <h1 set:html={title} />
+    <p>{description}</p>
+    <span>{aside}</span>
+  </div>
+</header>

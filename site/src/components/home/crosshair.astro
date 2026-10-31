@@ -1,0 +1,10 @@
+---
+// 十字准星装饰件，自 home-experience.tsx 的 Crosshair 平移（M1）。
+interface Props {
+  class?: string
+}
+
+const { class: className = '' } = Astro.props
+---
+
+<span class={`crosshair ${className}`.trim()} aria-hidden="true"><i /></span>
