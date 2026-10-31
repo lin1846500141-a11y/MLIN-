@@ -30,6 +30,13 @@ const ALLOWED_TRACKS = new Set([
   'lemonade.mp3',
   'mengxing.mp3',
   'luoshengmen.mp3',
+  'lengzhan.mp3',
+  'dieforyou.mp3',
+  'zenmele.mp3',
+  'deadman.mp3',
+  'xiaoxiaoqiji.mp3',
+  'xingjubuxi.mp3',
+  'dingxuan.mp3',
 ])
 
 export const onRequestGet = async ({

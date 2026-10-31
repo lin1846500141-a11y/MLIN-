@@ -20,6 +20,13 @@ const signalFmTracks = [
   { file: 'lemonade.mp3', title: 'aespa — LEMONADE' },
   { file: 'mengxing.mp3', title: 'handsome lau / HYPEEZY / 冯泳 — 梦醒' },
   { file: 'luoshengmen.mp3', title: '梨冻紧 / Wiz_H张子豪 — 罗生门（Follow）' },
+  { file: 'lengzhan.mp3', title: 'TizzyT / 万妮达Vinida Weng — 冷战' },
+  { file: 'dieforyou.mp3', title: '无畏契约 / Grabbitz — Die For You (为你而战)' },
+  { file: 'zenmele.mp3', title: '汪苏泷 / 于文文 — 怎么了 (Live)' },
+  { file: 'deadman.mp3', title: '蔡徐坤 — Deadman' },
+  { file: 'xiaoxiaoqiji.mp3', title: '鸣潮先约电台 / jixwang / 飞行雪绒 — 小小奇迹' },
+  { file: 'xingjubuxi.mp3', title: '鸣潮先约电台 / 飞行雪绒 — 星炬不熄' },
+  { file: 'dingxuan.mp3', title: '鸣潮先约电台 / 黄霄雲 / 杨秉音 — 定玄' },
 ]
 
 const topNavLinks = [
@@ -117,25 +124,35 @@ const routeLinks = [
       </div>
 
       <div class="hero-bottombar hero-chrome">
-        <button
-          class="hero-waveform"
-          type="button"
-          data-playing="false"
-          data-r2-base={r2AudioBase}
-          data-tracks={JSON.stringify(signalFmTracks)}
-          aria-label="播放 / 暂停 SIGNAL FM (R2 随机电台)"
-          title="SIGNAL FM — 点击随机播放 / 暂停"
-        >
-          <span class="hero-waveform-bars" aria-hidden="true">
-            {
-              waveRestHeights.map((h) => (
-                <i style={`--rest-h:${h}px;height:${h}px`} />
-              ))
-            }
-          </span>
-        </button>
-        <span class="hero-bottom-sep" aria-hidden="true"></span>
-        <span class="hero-bottom-coord">35.2149° N / 139.3467° E</span>
+        <div class="hero-dock-card">
+          <button
+            class="hero-waveform"
+            type="button"
+            data-playing="false"
+            data-r2-base={r2AudioBase}
+            data-tracks={JSON.stringify(signalFmTracks)}
+            aria-label="播放 / 暂停 SIGNAL FM (R2 随机电台)"
+            title="SIGNAL FM — 点击随机播放 / 暂停"
+          >
+            <span class="hero-disc" aria-hidden="true">
+              <i class="hero-disc-glint"></i>
+              <b class="hero-disc-core"></b>
+            </span>
+            <span class="hero-waveform-bars" aria-hidden="true">
+              {
+                waveRestHeights.map((h) => (
+                  <i style={`--rest-h:${h}px;height:${h}px`} />
+                ))
+              }
+            </span>
+            <span class="hero-track-meta" aria-hidden="true">
+              <em>SIGNAL FM</em>
+              <strong class="hero-track-name">TAP TO PLAY</strong>
+            </span>
+          </button>
+          <span class="hero-bottom-sep" aria-hidden="true"></span>
+          <span class="hero-bottom-coord">35.2149° N / 139.3467° E</span>
+        </div>
         <span class="hero-bottom-rule" aria-hidden="true"></span>
         <audio id="hero-r2-audio" crossorigin="anonymous" preload="none" />
       </div>
@@ -344,6 +361,7 @@ const routeLinks = [
     // ---- SIGNAL FM：左下角声波随 R2 音频频率实时变化，暂停即静止 ----
     const waveBtn = home.querySelector<HTMLButtonElement>('.hero-waveform')
     const waveBars = Array.from(home.querySelectorAll<HTMLElement>('.hero-waveform-bars i'))
+    const trackNameEl = home.querySelector<HTMLElement>('.hero-track-name')
     const audioEl = home.querySelector<HTMLAudioElement>('#hero-r2-audio')
 
     if (waveBtn && waveBars.length > 0) {
@@ -435,6 +453,7 @@ const routeLinks = [
           if (!picked) return
           audioEl.src = `${r2Base}/${picked.file}`
           waveBtn.title = `SIGNAL FM · ${picked.title}`
+          if (trackNameEl) trackNameEl.textContent = picked.title
         }
         await audioEl.play()
         waveBtn.dataset.playing = 'true'
