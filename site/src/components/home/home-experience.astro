@@ -1,43 +1,8 @@
 ---
-// 首页（M2 动效孤岛 + 首屏 UI 爆改版）：
-// - 首屏视觉：1:1 对齐定稿参考图（左中 ARCHIVE + 副标 + 导语 + BUILDER 按钮；
-//   顶栏 MLINStudio + 横线 + HOME/ARCHIVE/PROJECTS/ABOUT；
-//   底栏 R2 实时频谱声波 + 坐标 + 贯穿基准线；右栏半透明索引轨）
-// - 背景主视觉：/media/hero-f4f229.webp（源自 f4f229_3_nap3_4k.jpg）
-// - 左下角音波：连接 Cloudflare R2 音频流（PUBLIC_SIGNAL_FM_URL），
-//   通过 Web Audio API (AnalyserNode.getByteFrequencyData) 随音乐频率实时跳动，
-//   默认静音暂停，用户暂停时立即停止跳动。
 import 'lenis/dist/lenis.css'
 import Crosshair from './crosshair.astro'
+import HomeHero from './home-hero.astro'
 import { capabilityNotes } from '../../lib/archive-data'
-
-const archiveLetters = 'ARCHIVE'.split('')
-// R2 音频基础路径：默认走同源 Pages Function /api/audio（读取 MLIN_R2 桶，无 CORS 跨域限制），
-// 也可通过 PUBLIC_SIGNAL_FM_URL 覆盖为 R2 公开域名。
-const r2AudioBase = (import.meta.env.PUBLIC_SIGNAL_FM_URL ?? '/api/audio').replace(/\/+$/, '')
-
-const signalFmTracks = [
-  { file: 'lemonade.mp3', title: 'aespa — LEMONADE' },
-  { file: 'mengxing.mp3', title: 'handsome lau / HYPEEZY / 冯泳 — 梦醒' },
-  { file: 'luoshengmen.mp3', title: '梨冻紧 / Wiz_H张子豪 — 罗生门（Follow）' },
-  { file: 'lengzhan.mp3', title: 'TizzyT / 万妮达Vinida Weng — 冷战' },
-  { file: 'dieforyou.mp3', title: '无畏契约 / Grabbitz — Die For You (为你而战)' },
-  { file: 'zenmele.mp3', title: '汪苏泷 / 于文文 — 怎么了 (Live)' },
-  { file: 'deadman.mp3', title: '蔡徐坤 — Deadman' },
-  { file: 'xiaoxiaoqiji.mp3', title: '鸣潮先约电台 / jixwang / 飞行雪绒 — 小小奇迹' },
-  { file: 'xingjubuxi.mp3', title: '鸣潮先约电台 / 飞行雪绒 — 星炬不熄' },
-  { file: 'dingxuan.mp3', title: '鸣潮先约电台 / 黄霄雲 / 杨秉音 — 定玄' },
-]
-
-const topNavLinks = [
-  { href: '/', label: 'HOME', active: true },
-  { href: '/wiki', label: 'ARCHIVE', active: false },
-  { href: '#field-heading', label: 'PROJECTS', active: false },
-  { href: '/about', label: 'ABOUT', active: false },
-]
-
-// 参考图左下角声波的 13 根竖条静止基准高度（px）
-const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
 
 const routeLinks = [
   {
@@ -64,158 +29,8 @@ const routeLinks = [
 ]
 ---
 
-<main class="home" id="top" data-intro="running">
-  <section class="hero-scroll" aria-label="MLINStudio Coastal Signal Archive 首页">
-    <div class="hero-stage">
-      <div class="hero-scene" aria-hidden="true">
-        <div class="hero-scene-back">
-          <img
-            class="hero-scene-image"
-            src="/media/hero-f4f229.webp"
-            alt=""
-            width="2100"
-            height="1250"
-            loading="eager"
-            fetchpriority="high"
-          />
-        </div>
-        <div class="hero-atmosphere"></div>
-      </div>
-
-      <header class="hero-topbar hero-chrome">
-        <a class="hero-brand" href="/" aria-label="MLINStudio 首页">MLINStudio</a>
-        <span class="hero-top-rule" aria-hidden="true"></span>
-        <nav class="hero-topnav" aria-label="首屏主导航">
-          {
-            topNavLinks.map((item) => (
-              <a href={item.href} class={item.active ? 'is-active' : undefined}>
-                <span>{item.label}</span>
-              </a>
-            ))
-          }
-        </nav>
-      </header>
-
-      <div class="hero-editorial">
-        <h1 class="hero-title-final" aria-label="Archive">
-          <span class="hero-word-scale">
-            {
-              archiveLetters.map((letter, index) => (
-                <span class={`hero-title-letter hero-letter-${index + 1}`} aria-hidden="true">
-                  {letter}
-                </span>
-              ))
-            }
-          </span>
-        </h1>
-
-        <div class="hero-editorial-sub hero-chrome">
-          <p class="hero-subtitle">COASTAL SIGNAL ARCHIVE</p>
-          <span class="hero-subtitle-rule" aria-hidden="true"></span>
-          <p class="hero-tagline">
-            Record the signals by the coast,<br />
-            and keep the moments in time.
-          </p>
-          <a class="hero-cta" href="/wiki">
-            <span>BUILDER</span>
-            <i aria-hidden="true">›</i>
-          </a>
-        </div>
-      </div>
-
-      <div class="hero-bottombar hero-chrome">
-        <div class="hero-dock-card">
-          <button
-            class="hero-waveform"
-            type="button"
-            data-playing="false"
-            data-r2-base={r2AudioBase}
-            data-tracks={JSON.stringify(signalFmTracks)}
-            aria-label="播放 / 暂停 SIGNAL FM (R2 随机电台)"
-            title="SIGNAL FM — 点击随机播放 / 暂停"
-          >
-            <span class="hero-disc" aria-hidden="true">
-              <i class="hero-disc-glint"></i>
-              <b class="hero-disc-core"></b>
-            </span>
-            <span class="hero-waveform-bars" aria-hidden="true">
-              {
-                waveRestHeights.map((h) => (
-                  <i style={`--rest-h:${h}px;height:${h}px`} />
-                ))
-              }
-            </span>
-            <span class="hero-track-meta" aria-hidden="true">
-              <em>SIGNAL FM</em>
-              <strong class="hero-track-name">TAP TO PLAY</strong>
-            </span>
-          </button>
-          <span class="hero-bottom-sep" aria-hidden="true"></span>
-          <span class="hero-bottom-coord">35.2149° N / 139.3467° E</span>
-        </div>
-        <span class="hero-bottom-rule" aria-hidden="true"></span>
-        <audio id="hero-r2-audio" crossorigin="anonymous" preload="none" />
-      </div>
-
-      <aside class="hero-index hero-chrome" aria-label="Coastal Signal Archive 索引">
-        <div class="hero-index-name">COASTAL<br />SIGNAL<br />ARCHIVE</div>
-        <div class="hero-index-count">
-          <strong>01</strong><span>/ 01</span>
-        </div>
-        <div class="hero-index-track" aria-hidden="true"><i></i></div>
-        <div class="hero-index-status">
-          <span>IN SERVICE</span>
-          <i>/</i>
-          <span>FIELD NOTES</span>
-          <div class="hero-index-dots" aria-hidden="true">
-            <b class="is-active"></b>
-            <b></b>
-          </div>
-        </div>
-        <a class="hero-index-scroll" href="#studio-position">
-          <span>SCROLL<br />DOWN</span>
-          <b aria-hidden="true">↓</b>
-        </a>
-        <div class="hero-index-foot" aria-hidden="true">
-          <strong>01</strong><span>/ 01</span>
-        </div>
-      </aside>
-
-      <div class="hero-shutters" aria-hidden="true">
-        {
-          archiveLetters.map((_, index) => (
-            <span class={`hero-shutter hero-shutter-${index + 1}`} />
-          ))
-        }
-      </div>
-
-      <div class="hero-launch-word" aria-hidden="true">
-        <span class="hero-word-scale">
-          {
-            archiveLetters.map((letter, index) => (
-              <span class={`hero-launch-letter hero-letter-${index + 1}`}>{letter}</span>
-            ))
-          }
-        </span>
-      </div>
-
-      <button class="hero-launch-skip" type="button" aria-label="跳过首页启动动画">
-        SKIP INTRO <span>↗</span>
-      </button>
-
-      <noscript>
-        <style is:inline>{`.hero-shutters,.hero-launch-word,.hero-launch-skip{display:none!important}.hero-title-letter,.hero-chrome{opacity:1!important;visibility:visible!important}`}</style>
-      </noscript>
-
-      <div class="sr-only">
-        <p>MLINStudio Coastal Signal Archive.</p>
-        <p>Record the signals by the coast, and keep the moments in time.</p>
-        <p>Coordinates 35.2149 degrees north, 139.3467 degrees east.</p>
-      </div>
-
-      <div class="hero-blue-wipe" aria-hidden="true"></div>
-    </div>
-  </section>
+<main class="home" data-home-redesign id="top">
+  <HomeHero />
 
   <aside class="home-progress-rail" aria-hidden="true">
     <span class="home-progress-kicker">FIELD INDEX</span>
@@ -333,19 +148,7 @@ const routeLinks = [
 </main>
 
 <style>
-  .hero-scene-image {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .plate-photo img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
+  .plate-photo img { position: absolute; inset: 0; width: 100%; height: 100%; }
 </style>
 
 <script>
@@ -354,270 +157,19 @@ const routeLinks = [
   import Lenis from 'lenis'
 
   gsap.registerPlugin(ScrollTrigger)
-
-  const home = document.querySelector<HTMLElement>('.home')
-
+  const home = document.querySelector<HTMLElement>('.home[data-home-redesign]')
   if (home) {
-    // ---- SIGNAL FM：左下角声波随 R2 音频频率实时变化，暂停即静止 ----
-    const waveBtn = home.querySelector<HTMLButtonElement>('.hero-waveform')
-    const waveBars = Array.from(home.querySelectorAll<HTMLElement>('.hero-waveform-bars i'))
-    const trackNameEl = home.querySelector<HTMLElement>('.hero-track-name')
-    const audioEl = home.querySelector<HTMLAudioElement>('#hero-r2-audio')
-
-    if (waveBtn && waveBars.length > 0) {
-      let audioCtx: AudioContext | null = null
-      let analyser: AnalyserNode | null = null
-      let freqData: Uint8Array<ArrayBuffer> | null = null
-      let rafId = 0
-
-      const restHeights = waveBars.map((bar) => {
-        const raw = bar.style.getPropertyValue('--rest-h')
-        return Number.parseFloat(raw) || 8
-      })
-
-      const resetWaveBars = () => {
-        cancelAnimationFrame(rafId)
-        rafId = 0
-        waveBars.forEach((bar, idx) => {
-          bar.style.height = `${restHeights[idx]}px`
-        })
-      }
-
-      const tickWaveform = () => {
-        if (!analyser || !freqData || audioEl?.paused) {
-          resetWaveBars()
-          return
-        }
-        analyser.getByteFrequencyData(freqData)
-        const binCount = freqData.length
-        waveBars.forEach((bar, idx) => {
-          // 采样人耳敏感的中低频段（0 ~ 65% 频谱），映射到 3px ~ 30px 高度
-          const binIndex = Math.min(binCount - 1, Math.floor((idx / waveBars.length) * (binCount * 0.65)))
-          const energy = freqData![binIndex] / 255
-          const h = Math.max(3, Math.round(3 + energy * 27))
-          bar.style.height = `${h}px`
-        })
-        rafId = requestAnimationFrame(tickWaveform)
-      }
-
-      const ensureAudioGraph = () => {
-        if (!audioEl || audioCtx) return
-        const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-        audioCtx = new Ctx()
-        analyser = audioCtx.createAnalyser()
-        analyser.fftSize = 64
-        analyser.smoothingTimeConstant = 0.78
-        const source = audioCtx.createMediaElementSource(audioEl)
-        source.connect(analyser)
-        analyser.connect(audioCtx.destination)
-        freqData = new Uint8Array(new ArrayBuffer(analyser.frequencyBinCount))
-      }
-
-      // 随机播放队列（Fisher-Yates 洗牌，播完一首自动切下一首随机曲目，不连续重复）
-      type TrackItem = { file: string; title: string }
-      const r2Base = waveBtn.dataset.r2Base || '/api/audio'
-      let tracks: TrackItem[] = []
-      try {
-        tracks = JSON.parse(waveBtn.dataset.tracks || '[]') as TrackItem[]
-      } catch {
-        tracks = []
-      }
-      let queue: TrackItem[] = []
-      let currentFile = ''
-
-      const nextRandomTrack = (): TrackItem | null => {
-        if (tracks.length === 0) return null
-        if (queue.length === 0) {
-          queue = [...tracks]
-          for (let i = queue.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1))
-            ;[queue[i], queue[j]] = [queue[j], queue[i]]
-          }
-          if (queue.length > 1 && queue[0].file === currentFile) {
-            ;[queue[0], queue[queue.length - 1]] = [queue[queue.length - 1], queue[0]]
-          }
-        }
-        const picked = queue.shift() ?? tracks[0]
-        currentFile = picked.file
-        return picked
-      }
-
-      const playRandom = async (forceNext = false) => {
-        if (!audioEl || tracks.length === 0) return
-        ensureAudioGraph()
-        if (audioCtx?.state === 'suspended') {
-          await audioCtx.resume()
-        }
-        if (!audioEl.src || forceNext) {
-          const picked = nextRandomTrack()
-          if (!picked) return
-          audioEl.src = `${r2Base}/${picked.file}`
-          waveBtn.title = `SIGNAL FM · ${picked.title}`
-          if (trackNameEl) trackNameEl.textContent = picked.title
-        }
-        await audioEl.play()
-        waveBtn.dataset.playing = 'true'
-        tickWaveform()
-      }
-
-      waveBtn.addEventListener('click', async () => {
-        if (!audioEl) return
-        try {
-          if (audioEl.paused) {
-            await playRandom(false)
-          } else {
-            audioEl.pause()
-            waveBtn.dataset.playing = 'false'
-            resetWaveBars()
-          }
-        } catch {
-          waveBtn.dataset.playing = 'false'
-          resetWaveBars()
-        }
-      })
-
-      audioEl?.addEventListener('pause', () => {
-        if (!audioEl.ended) {
-          waveBtn.dataset.playing = 'false'
-          resetWaveBars()
-        }
-      })
-      audioEl?.addEventListener('ended', () => {
-        // 一首播完自动随机切下一首
-        void playRandom(true).catch(() => {
-          waveBtn.dataset.playing = 'false'
-          resetWaveBars()
-        })
-      })
-    }
-
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      // ---- Lenis 平滑滚动 ----
+    const motion = gsap.matchMedia()
+    motion.add('(prefers-reduced-motion: no-preference)', () => {
+      const hoverCleanups: Array<() => void> = []
       const lenis = new Lenis({
-        duration: 1.05,
-        lerp: 0.09,
-        smoothWheel: true,
-        wheelMultiplier: 0.9,
-        touchMultiplier: 1.05,
-        anchors: true,
+        duration: 1.05, lerp: 0.09, smoothWheel: true,
+        wheelMultiplier: 0.9, touchMultiplier: 1.05, anchors: true,
       })
       lenis.on('scroll', ScrollTrigger.update)
-      gsap.ticker.add((time) => lenis.raf(time * 1000))
+      const tick = (time: number) => lenis.raf(time * 1000)
+      gsap.ticker.add(tick)
       gsap.ticker.lagSmoothing(0)
-
-      const stage = home.querySelector<HTMLElement>('.hero-stage')
-
-      // ---- 鼠标视差（仅精确指针）----
-      if (stage && window.matchMedia('(pointer: fine)').matches) {
-        let frame = 0
-        const updateParallax = (event: PointerEvent) => {
-          cancelAnimationFrame(frame)
-          frame = requestAnimationFrame(() => {
-            const bounds = stage.getBoundingClientRect()
-            const x = (event.clientX - bounds.left) / bounds.width - 0.5
-            const y = (event.clientY - bounds.top) / bounds.height - 0.5
-
-            stage.style.setProperty('--hero-back-x', `${x * -10}px`)
-            stage.style.setProperty('--hero-back-y', `${y * -6}px`)
-          })
-        }
-
-        const resetParallax = () => {
-          stage.style.setProperty('--hero-back-x', '0px')
-          stage.style.setProperty('--hero-back-y', '0px')
-        }
-
-        stage.addEventListener('pointermove', updateParallax)
-        stage.addEventListener('pointerleave', resetParallax)
-      }
-
-      // ---- 开场字幕时间线 ----
-      const launchLetters = gsap.utils.toArray<HTMLElement>('.hero-launch-letter')
-      const titleLetters = gsap.utils.toArray<HTMLElement>('.hero-title-letter')
-      const shutters = gsap.utils.toArray<HTMLElement>('.hero-shutter')
-      const launchOffsets = [64, -48, 78, -64, 54, -72, 42]
-      const launchRotations = [-2.4, 1.8, -1.2, 2.1, -1.7, 1.4, -0.8]
-
-      const intro = gsap.timeline({
-        defaults: { overwrite: 'auto' },
-        onComplete: () => home.setAttribute('data-intro', 'complete'),
-      })
-
-      launchLetters.forEach((letter, index) => {
-        const landingAt = 0.12 + index * 0.22
-
-        intro
-          .fromTo(
-            letter,
-            {
-              autoAlpha: 0,
-              scale: 6.8 - index * 0.18,
-              y: launchOffsets[index],
-              rotationZ: launchRotations[index],
-              z: 360,
-              filter: 'blur(13px)',
-            },
-            {
-              autoAlpha: 1,
-              scale: 1,
-              y: 0,
-              rotationZ: 0,
-              z: 0,
-              filter: 'blur(0px)',
-              duration: 0.72,
-              ease: 'expo.out',
-            },
-            landingAt,
-          )
-          .to(
-            shutters[index],
-            { yPercent: -102, duration: 0.62, ease: 'power4.inOut' },
-            landingAt + 0.3,
-          )
-          .to(titleLetters[index], { autoAlpha: 1, duration: 0.12 }, landingAt + 0.62)
-          .to(letter, { autoAlpha: 0, duration: 0.14, ease: 'power2.out' }, landingAt + 0.68)
-      })
-
-      intro
-        .to('.hero-scene-image', { scale: 1, duration: 1.1, ease: 'power3.out' }, 0.7)
-        .fromTo(
-          '.hero-chrome',
-          { autoAlpha: 0, y: 12 },
-          { autoAlpha: 1, y: 0, duration: 0.62, stagger: 0.045, ease: 'power3.out' },
-          1.82,
-        )
-        .to('.hero-launch-skip', { autoAlpha: 0, duration: 0.2 }, 1.92)
-        .set('.hero-shutters, .hero-launch-word', { autoAlpha: 0 }, 2.28)
-
-      const skipIntro = () => intro.progress(1)
-      window.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') skipIntro()
-      })
-      home.querySelector('.hero-launch-skip')?.addEventListener('click', skipIntro)
-
-      // ---- 滚动叙事（hero 段 scrub 0.8）----
-      const hero = home.querySelector<HTMLElement>('.hero-scroll')
-      if (hero) {
-        gsap
-          .timeline({
-            scrollTrigger: {
-              trigger: hero,
-              start: 'top top',
-              end: 'bottom bottom',
-              scrub: 0.8,
-            },
-          })
-          .to('.hero-scene-image', { scale: 1.085, yPercent: 1.8, ease: 'none' }, 0)
-          .to('.hero-editorial', { yPercent: -12, opacity: 0.16, ease: 'none' }, 0.08)
-          .to('.hero-topbar, .hero-bottombar', { opacity: 0, y: -14, ease: 'none' }, 0.12)
-          .to('.hero-index', { xPercent: 105, ease: 'power2.in' }, 0.42)
-          .fromTo(
-            '.hero-blue-wipe',
-            { scaleY: 0 },
-            { scaleY: 1, transformOrigin: 'bottom center', ease: 'power2.inOut' },
-            0.7,
-          )
-      }
 
       gsap.from('.manifesto-line span', {
         yPercent: 110,
@@ -644,12 +196,15 @@ const routeLinks = [
           },
         })
 
-        plate.addEventListener('mouseenter', () =>
-          gsap.to(plate, { y: -8, duration: 0.35, ease: 'power4.out', overwrite: 'auto' }),
-        )
-        plate.addEventListener('mouseleave', () =>
-          gsap.to(plate, { y: 0, duration: 0.35, ease: 'power4.out', overwrite: 'auto' }),
-        )
+        const enter = () => { gsap.to(plate, { y: -8, duration: 0.35, ease: 'power4.out', overwrite: 'auto' }) }
+        const leave = () => { gsap.to(plate, { y: 0, duration: 0.35, ease: 'power4.out', overwrite: 'auto' }) }
+        plate.addEventListener('mouseenter', enter)
+        plate.addEventListener('mouseleave', leave)
+        hoverCleanups.push(() => {
+          plate.removeEventListener('mouseenter', enter)
+          plate.removeEventListener('mouseleave', leave)
+          gsap.killTweensOf(plate)
+        })
       })
 
       gsap.utils.toArray<HTMLElement>('.route-row').forEach((row) => {
@@ -725,6 +280,12 @@ const routeLinks = [
           },
         })
       })
-    }
+      return () => {
+        hoverCleanups.forEach((cleanup) => cleanup())
+        gsap.ticker.remove(tick)
+        lenis.destroy()
+      }
+    }, home)
+    document.addEventListener('astro:before-swap', () => motion.revert(), { once: true })
   }
 </script>

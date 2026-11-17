@@ -1,0 +1,800 @@
+---
+interface Props {
+  placeholderTitle?: string
+}
+
+const { placeholderTitle = '海岸のシグナル - ライブ (Live)' } = Astro.props
+
+const r2AudioBase = (import.meta.env.PUBLIC_SIGNAL_FM_URL ?? '/api/audio').replace(/\/+$/, '')
+
+const signalFmTracks = [
+  { file: 'lemonade.mp3', title: 'aespa — LEMONADE' },
+  { file: 'mengxing.mp3', title: 'handsome lau / HYPEEZY / 冯泳 — 梦醒' },
+  { file: 'luoshengmen.mp3', title: '梨冻紧 / Wiz_H张子豪 — 罗生门（Follow）' },
+  { file: 'lengzhan.mp3', title: 'TizzyT / 万妮达Vinida Weng — 冷战' },
+  { file: 'dieforyou.mp3', title: '无畏契约 / Grabbitz — Die For You (为你而战)' },
+  { file: 'zenmele.mp3', title: '汪苏泷 / 于文文 — 怎么了 (Live)' },
+  { file: 'deadman.mp3', title: '蔡徐坤 — Deadman' },
+  { file: 'xiaoxiaoqiji.mp3', title: '鸣潮先约电台 / jixwang / 飞行雪绒 — 小小奇迹' },
+  { file: 'xingjubuxi.mp3', title: '鸣潮先约电台 / 飞行雪绒 — 星炬不熄' },
+  { file: 'dingxuan.mp3', title: '鸣潮先约电台 / 黄霄雲 / 杨秉音 — 定玄' },
+]
+
+const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
+---
+
+<section
+  class="music-player"
+  data-home-music-player
+  data-playing="false"
+  data-state="idle"
+  data-r2-base={r2AudioBase}
+  data-tracks={JSON.stringify(signalFmTracks)}
+  aria-label="SIGNAL RECEIVER 海岸信号电台播放器"
+>
+  <div class="music-player-visual" aria-hidden="true">
+    <span class="music-player-disc">
+      <span class="music-player-disc-ring"></span>
+      <span class="music-player-disc-core"></span>
+    </span>
+
+    <span class="music-player-wave" data-player-wave>
+      {
+        waveRestHeights.map((h) => (
+          <i class="music-player-wave-bar" style={`--rest-h:${h}px;height:${h}px`} />
+        ))
+      }
+    </span>
+  </div>
+
+  <div class="music-player-body">
+    <div class="music-player-info">
+      <p class="music-player-kicker">SIGNAL RECEIVER · FM 01 : COASTAL</p>
+      <p class="music-player-title" data-player-title title={placeholderTitle}>
+        {placeholderTitle}
+      </p>
+      <p class="music-player-error" data-player-error aria-live="polite" hidden></p>
+    </div>
+
+    <span class="music-player-time" data-player-time>00:00 / --:--</span>
+  </div>
+
+  <div class="music-player-controls" role="group" aria-label="播放控制">
+    <button
+      class="music-player-btn music-player-btn-step"
+      type="button"
+      data-player-action="previous"
+      aria-label="上一首"
+      title="上一首"
+    >
+      <svg viewBox="0 0 16 12" width="13" height="10" fill="currentColor" aria-hidden="true">
+        <path d="M7.5 1.3a.5.5 0 0 0-.78-.41L.8 5.59a.5.5 0 0 0 0 .82l5.92 4.7a.5.5 0 0 0 .78-.41V1.3Zm7.7 0a.5.5 0 0 0-.78-.41L8.5 5.59a.5.5 0 0 0 0 .82l5.92 4.7a.5.5 0 0 0 .78-.41V1.3Z" />
+      </svg>
+    </button>
+
+    <button
+      class="music-player-btn music-player-btn-toggle"
+      type="button"
+      data-player-action="toggle"
+      aria-label="播放音频"
+      aria-pressed="false"
+      title="播放 / 暂停"
+    >
+      <svg
+        class="music-player-icon-play"
+        viewBox="0 0 14 16"
+        width="12"
+        height="14"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M2.2 1.15a.7.7 0 0 0-1.05.6v12.5a.7.7 0 0 0 1.05.6l10.6-6.25a.7.7 0 0 0 0-1.2L2.2 1.15Z" />
+      </svg>
+      <svg
+        class="music-player-icon-pause"
+        viewBox="0 0 14 16"
+        width="12"
+        height="14"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <rect x="2" y="1.5" width="3.2" height="13" rx="0.8" />
+        <rect x="8.8" y="1.5" width="3.2" height="13" rx="0.8" />
+      </svg>
+    </button>
+
+    <button
+      class="music-player-btn music-player-btn-step"
+      type="button"
+      data-player-action="next"
+      aria-label="下一首"
+      title="下一首"
+    >
+      <svg viewBox="0 0 16 12" width="13" height="10" fill="currentColor" aria-hidden="true">
+        <path d="M.8 1.3a.5.5 0 0 1 .78-.41l5.92 4.7a.5.5 0 0 1 0 .82l-5.92 4.7A.5.5 0 0 1 .8 10.7V1.3Zm7.7 0a.5.5 0 0 1 .78-.41l5.92 4.7a.5.5 0 0 1 0 .82l-5.92 4.7a.5.5 0 0 1-.78-.41V1.3Z" />
+      </svg>
+    </button>
+  </div>
+
+  <audio data-player-audio crossorigin="anonymous" preload="none"></audio>
+
+  <noscript>
+    <p class="music-player-noscript">当前浏览器已禁用脚本，电台音频控制不可用。</p>
+  </noscript>
+</section>
+
+<style>
+  .music-player {
+    --_player-height: var(--home-player-height, 62px);
+    --_text: var(--home-text, #f4f6fa);
+    --_muted: var(--home-muted, #b9c3d3);
+    --_line: var(--home-line, rgba(225, 234, 248, 0.22));
+    --_accent: var(--home-accent, #f16c75);
+    --_glass-bg: var(
+      --home-glass-bg,
+      linear-gradient(145deg, rgba(161, 182, 216, 0.18), rgba(8, 19, 36, 0.42))
+    );
+    --_glass-border: var(--home-glass-border, 1px solid rgba(223, 233, 251, 0.28));
+    --_glass-blur: var(--home-glass-blur, 16px);
+    --_glass-radius: var(--home-glass-radius, 10px);
+    --_glass-shadow: var(--home-glass-shadow, inset 0 1px 0 rgba(255, 255, 255, 0.08));
+    --_font-ui: var(
+      --home-font-ui,
+      "Helvetica Neue",
+      "Inter",
+      "Noto Sans SC",
+      Arial,
+      sans-serif
+    );
+    --_font-mono: var(--home-font-mono, "SFMono-Regular", "Roboto Mono", Consolas, monospace);
+    --_track-nav: var(--home-track-nav, 0.2em);
+    --_space-1: var(--home-space-1, 8px);
+    --_space-2: var(--home-space-2, 16px);
+    --_space-3: var(--home-space-3, 24px);
+    --_space-4: var(--home-space-4, 40px);
+
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    min-height: var(--_player-height);
+    padding: 8px 18px 8px 14px;
+    border: var(--_glass-border);
+    border-radius: var(--_glass-radius);
+    background: var(--_glass-bg);
+    box-shadow: var(--_glass-shadow);
+    color: var(--_text);
+    font-family: var(--_font-ui);
+    backdrop-filter: blur(var(--_glass-blur));
+    -webkit-backdrop-filter: blur(var(--_glass-blur));
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .music-player {
+      background: linear-gradient(145deg, rgba(16, 31, 53, 0.92), rgba(8, 19, 34, 0.96));
+    }
+  }
+
+  .music-player-visual {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  .music-player-disc {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border: 1px solid rgba(225, 234, 248, 0.36);
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(8, 19, 34, 0.92) 0%,
+      rgba(19, 37, 64, 0.68) 65%,
+      rgba(8, 19, 34, 0.94) 100%
+    );
+    animation: music-player-spin 11s linear infinite;
+    animation-play-state: paused;
+  }
+
+  .music-player[data-playing='true'] .music-player-disc {
+    animation-play-state: running;
+  }
+
+  .music-player-disc-ring {
+    position: absolute;
+    inset: 5px;
+    border: 1px dashed rgba(225, 234, 248, 0.18);
+    border-radius: 50%;
+  }
+
+  .music-player-disc-core {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid rgba(244, 246, 250, 0.9);
+    border-radius: 50%;
+    background: var(--_accent);
+    box-shadow: 0 0 8px rgba(241, 108, 117, 0.55);
+  }
+
+  @keyframes music-player-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .music-player-wave {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    height: 32px;
+    padding: 0 4px;
+  }
+
+  .music-player-wave::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--_line);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .music-player-wave-bar {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 2px;
+    min-height: 3px;
+    max-height: 30px;
+    border-radius: 999px;
+    background: rgba(244, 246, 250, 0.86);
+    transition: height 90ms ease-out;
+  }
+
+  .music-player-body {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding-left: 4px;
+  }
+
+  .music-player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .music-player-kicker {
+    margin: 0;
+    overflow: hidden;
+    color: var(--_text);
+    font-size: 9px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0.16em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .music-player-title {
+    margin: 0;
+    overflow: hidden;
+    color: var(--_muted);
+    font-size: 11.5px;
+    line-height: 1.35;
+    letter-spacing: 0.04em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .music-player-error {
+    margin: 0;
+    color: var(--_accent);
+    font-size: 10px;
+    line-height: 1.25;
+    letter-spacing: 0.04em;
+  }
+
+  .music-player-time {
+    flex-shrink: 0;
+    color: var(--_muted);
+    font-family: var(--_font-mono);
+    font-size: 10px;
+    line-height: 1.35;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .music-player-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: 6px;
+  }
+
+  .music-player-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--_text);
+    cursor: pointer;
+    transition: background-color 0.18s ease, color 0.18s ease, transform 0.15s ease, opacity 0.18s ease;
+  }
+
+  .music-player-btn-step {
+    color: rgba(244, 246, 250, 0.85);
+  }
+
+  .music-player-btn:hover {
+    background: rgba(225, 234, 248, 0.1);
+    color: #ffffff;
+  }
+
+  .music-player-btn:active {
+    transform: scale(0.94);
+  }
+
+  .music-player-btn:focus-visible {
+    outline: 2px solid var(--_text);
+    outline-offset: 2px;
+  }
+
+  .music-player-icon-pause {
+    display: none;
+  }
+
+  .music-player[data-playing='true'] .music-player-icon-play {
+    display: none;
+  }
+
+  .music-player[data-playing='true'] .music-player-icon-pause {
+    display: block;
+  }
+
+  .music-player-noscript {
+    margin: 0;
+    color: var(--_muted);
+    font-size: 10px;
+  }
+
+  @media (max-width: 680px) {
+    .music-player {
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      padding: 10px 12px;
+    }
+
+    .music-player-visual {
+      order: 1;
+      gap: 10px;
+    }
+
+    .music-player-controls {
+      order: 2;
+      margin-left: auto;
+      gap: 2px;
+    }
+
+    .music-player-body {
+      order: 3;
+      flex: 1 1 100%;
+      width: 100%;
+      padding-left: 0;
+      padding-top: 6px;
+      border-top: 1px solid var(--_line);
+      align-items: center;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .music-player-wave {
+      display: none;
+    }
+
+    .music-player-kicker {
+      font-size: 8px;
+      letter-spacing: 0.1em;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .music-player-disc {
+      animation: none !important;
+    }
+
+    .music-player-wave-bar,
+    .music-player-btn {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  type TrackItem = { file: string; title: string }
+  type PlayerState = 'idle' | 'loading' | 'playing' | 'paused' | 'error'
+
+  const mediaSourceMap = new WeakMap<HTMLAudioElement, MediaElementAudioSourceNode>()
+
+  const formatClock = (seconds: number, fallback: string): string => {
+    if (!Number.isFinite(seconds) || seconds < 0) return fallback
+    const totalSeconds = Math.floor(seconds)
+    const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0')
+    const secs = String(totalSeconds % 60).padStart(2, '0')
+    return `${mins}:${secs}`
+  }
+
+  const initMusicPlayers = () => {
+    const players = document.querySelectorAll<HTMLElement>('[data-home-music-player]')
+
+    players.forEach((root) => {
+      if (root.dataset.playerReady === 'true') return
+      root.dataset.playerReady = 'true'
+
+      const audioEl = root.querySelector<HTMLAudioElement>('[data-player-audio]')
+      const titleEl = root.querySelector<HTMLElement>('[data-player-title]')
+      const timeEl = root.querySelector<HTMLElement>('[data-player-time]')
+      const errorEl = root.querySelector<HTMLElement>('[data-player-error]')
+      const waveEl = root.querySelector<HTMLElement>('[data-player-wave]')
+      const waveBars = waveEl ? Array.from(waveEl.querySelectorAll<HTMLElement>('i')) : []
+      const prevBtn = root.querySelector<HTMLButtonElement>('[data-player-action="previous"]')
+      const toggleBtn = root.querySelector<HTMLButtonElement>('[data-player-action="toggle"]')
+      const nextBtn = root.querySelector<HTMLButtonElement>('[data-player-action="next"]')
+
+      if (!audioEl || !toggleBtn) return
+
+      const r2Base = (root.dataset.r2Base || '/api/audio').replace(/\/+$/, '')
+      let tracks: TrackItem[] = []
+      try {
+        tracks = JSON.parse(root.dataset.tracks || '[]') as TrackItem[]
+      } catch {
+        tracks = []
+      }
+
+      const restHeights = waveBars.map((bar) => {
+        const raw = bar.style.getPropertyValue('--rest-h')
+        return Number.parseFloat(raw) || 8
+      })
+
+      let audioCtx: AudioContext | null = null
+      let analyser: AnalyserNode | null = null
+      let freqData: Uint8Array<ArrayBuffer> | null = null
+      let rafId = 0
+
+      let queue: TrackItem[] = []
+      let lastQueuedFile = ''
+      const history: TrackItem[] = []
+      let historyIndex = -1
+      let desiredPlaying = false
+      let opToken = 0
+
+      const controller = new AbortController()
+      const { signal } = controller
+
+      const prefersReducedMotion = () =>
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+      const setPlayerState = (state: PlayerState, isPlaying: boolean, errorMessage = '') => {
+        root.dataset.state = state
+        root.dataset.playing = isPlaying ? 'true' : 'false'
+        toggleBtn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false')
+        toggleBtn.setAttribute('aria-label', isPlaying ? '暂停音频' : '播放音频')
+        if (errorEl) {
+          if (errorMessage) {
+            errorEl.textContent = errorMessage
+            errorEl.hidden = false
+          } else {
+            errorEl.textContent = ''
+            errorEl.hidden = true
+          }
+        }
+      }
+
+      const resetWaveBars = () => {
+        if (rafId) {
+          cancelAnimationFrame(rafId)
+          rafId = 0
+        }
+        waveBars.forEach((bar, idx) => {
+          bar.style.height = `${restHeights[idx] ?? 8}px`
+        })
+      }
+
+      const tickWaveform = () => {
+        if (
+          !analyser ||
+          !freqData ||
+          audioEl.paused ||
+          root.dataset.playing !== 'true' ||
+          prefersReducedMotion()
+        ) {
+          resetWaveBars()
+          return
+        }
+        analyser.getByteFrequencyData(freqData)
+        const binCount = freqData.length
+        waveBars.forEach((bar, idx) => {
+          const binIndex = Math.min(
+            binCount - 1,
+            Math.floor((idx / waveBars.length) * (binCount * 0.65)),
+          )
+          const energy = freqData![binIndex] / 255
+          const h = Math.max(3, Math.round(3 + energy * 27))
+          bar.style.height = `${h}px`
+        })
+        rafId = requestAnimationFrame(tickWaveform)
+      }
+
+      const ensureAudioGraph = () => {
+        if (analyser && audioCtx) return
+        try {
+          const Ctx =
+            window.AudioContext ||
+            (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+          if (!Ctx) return
+          if (!audioCtx) {
+            audioCtx = new Ctx()
+          }
+          let source = mediaSourceMap.get(audioEl)
+          if (!source) {
+            source = audioCtx.createMediaElementSource(audioEl)
+            mediaSourceMap.set(audioEl, source)
+          }
+          analyser = audioCtx.createAnalyser()
+          analyser.fftSize = 64
+          analyser.smoothingTimeConstant = 0.78
+          source.connect(analyser)
+          analyser.connect(audioCtx.destination)
+          freqData = new Uint8Array(new ArrayBuffer(analyser.frequencyBinCount))
+        } catch {
+          analyser = null
+          freqData = null
+        }
+      }
+
+      const updateTimeDisplay = () => {
+        if (!timeEl) return
+        if (!audioEl.getAttribute('src')) {
+          timeEl.textContent = '00:00 / --:--'
+          return
+        }
+        const cur = formatClock(audioEl.currentTime, '00:00')
+        const dur =
+          Number.isFinite(audioEl.duration) && audioEl.duration > 0
+            ? formatClock(audioEl.duration, '--:--')
+            : '--:--'
+        timeEl.textContent = `${cur} / ${dur}`
+      }
+
+      const pullFromRandomQueue = (): TrackItem | null => {
+        if (tracks.length === 0) return null
+        if (queue.length === 0) {
+          queue = [...tracks]
+          for (let i = queue.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1))
+            ;[queue[i], queue[j]] = [queue[j], queue[i]]
+          }
+          if (queue.length > 1 && queue[0].file === lastQueuedFile) {
+            ;[queue[0], queue[queue.length - 1]] = [queue[queue.length - 1], queue[0]]
+          }
+        }
+        const picked = queue.shift() ?? tracks[0]
+        lastQueuedFile = picked.file
+        return picked
+      }
+
+      const applyTrackMeta = (track: TrackItem) => {
+        if (titleEl) {
+          titleEl.textContent = track.title
+          titleEl.title = track.title
+        }
+      }
+
+      const loadAndSyncTrack = async (track: TrackItem, shouldPlay: boolean, forceReload = false) => {
+        const token = ++opToken
+        const targetSrc = `${r2Base}/${track.file}`
+        const currentAttrSrc = audioEl.getAttribute('src') || ''
+
+        applyTrackMeta(track)
+
+        if (currentAttrSrc !== targetSrc || forceReload) {
+          audioEl.setAttribute('src', targetSrc)
+          audioEl.currentTime = 0
+          if (timeEl) timeEl.textContent = '00:00 / --:--'
+        }
+
+        if (!shouldPlay) {
+          audioEl.pause()
+          resetWaveBars()
+          setPlayerState('paused', false)
+          updateTimeDisplay()
+          return
+        }
+
+        setPlayerState('loading', false)
+        ensureAudioGraph()
+
+        try {
+          if (audioCtx?.state === 'suspended') {
+            await audioCtx.resume()
+          }
+          if (token !== opToken) return
+
+          await audioEl.play()
+          if (token !== opToken) return
+
+          setPlayerState('playing', true)
+          updateTimeDisplay()
+          tickWaveform()
+        } catch (err) {
+          if (token !== opToken) return
+          const isAbort = err instanceof DOMException && err.name === 'AbortError'
+          if (isAbort) return
+          desiredPlaying = false
+          resetWaveBars()
+          setPlayerState('error', false, '音频加载或播放受阻，请点击重试或切曲')
+        }
+      }
+
+      const handleToggle = async () => {
+        if (tracks.length === 0) {
+          setPlayerState('error', false, '暂无可用曲目')
+          return
+        }
+
+        if (desiredPlaying && !audioEl.paused) {
+          ++opToken
+          desiredPlaying = false
+          audioEl.pause()
+          resetWaveBars()
+          setPlayerState('paused', false)
+          return
+        }
+
+        desiredPlaying = true
+        const wasError = root.dataset.state === 'error'
+        if (historyIndex < 0) {
+          const first = pullFromRandomQueue()
+          if (!first) return
+          history.push(first)
+          historyIndex = 0
+        }
+        const currentTrack = history[historyIndex]
+        if (!currentTrack) return
+        await loadAndSyncTrack(currentTrack, true, wasError)
+      }
+
+      const handleNext = async (forcePlay?: boolean) => {
+        if (tracks.length === 0) return
+        const shouldPlay = forcePlay ?? desiredPlaying
+        desiredPlaying = shouldPlay
+
+        if (historyIndex < history.length - 1) {
+          historyIndex += 1
+        } else {
+          const picked = pullFromRandomQueue()
+          if (!picked) return
+          history.push(picked)
+          historyIndex = history.length - 1
+        }
+
+        const targetTrack = history[historyIndex]
+        if (!targetTrack) return
+        await loadAndSyncTrack(targetTrack, shouldPlay, true)
+      }
+
+      const handlePrevious = async () => {
+        if (tracks.length === 0) return
+
+        if (historyIndex > 0) {
+          historyIndex -= 1
+          const targetTrack = history[historyIndex]
+          if (!targetTrack) return
+          await loadAndSyncTrack(targetTrack, desiredPlaying, true)
+          return
+        }
+
+        // 无更早历史时回到当前曲目 0 秒；若尚未选曲则保持 00:00 / --:--
+        if (historyIndex === 0 && history[0]) {
+          const currentTrack = history[0]
+          if (audioEl.getAttribute('src')) {
+            audioEl.currentTime = 0
+            updateTimeDisplay()
+            if (desiredPlaying && audioEl.paused) {
+              await loadAndSyncTrack(currentTrack, true, false)
+            }
+          } else {
+            await loadAndSyncTrack(currentTrack, desiredPlaying, true)
+          }
+          return
+        }
+
+        if (timeEl) {
+          timeEl.textContent = '00:00 / --:--'
+        }
+      }
+
+      toggleBtn.addEventListener('click', () => void handleToggle(), { signal })
+      prevBtn?.addEventListener('click', () => void handlePrevious(), { signal })
+      nextBtn?.addEventListener('click', () => void handleNext(), { signal })
+
+      audioEl.addEventListener('loadedmetadata', updateTimeDisplay, { signal })
+      audioEl.addEventListener('durationchange', updateTimeDisplay, { signal })
+      audioEl.addEventListener('timeupdate', updateTimeDisplay, { signal })
+
+      audioEl.addEventListener(
+        'pause',
+        () => {
+          if (!audioEl.ended && root.dataset.state === 'playing') {
+            desiredPlaying = false
+            resetWaveBars()
+            setPlayerState('paused', false)
+          }
+        },
+        { signal },
+      )
+
+      audioEl.addEventListener(
+        'ended',
+        () => {
+          resetWaveBars()
+          void handleNext(true)
+        },
+        { signal },
+      )
+
+      audioEl.addEventListener(
+        'error',
+        () => {
+          if (!audioEl.getAttribute('src')) return
+          desiredPlaying = false
+          resetWaveBars()
+          setPlayerState('error', false, '音频流不可用，请重试或切换下一首')
+        },
+        { signal },
+      )
+
+      const cleanup = () => {
+        ++opToken
+        desiredPlaying = false
+        resetWaveBars()
+        controller.abort()
+        audioEl.pause()
+        if (audioCtx && audioCtx.state !== 'closed') {
+          void audioCtx.close().catch(() => {})
+        }
+        delete root.dataset.playerReady
+      }
+
+      document.addEventListener('astro:before-swap', cleanup, { once: true, signal })
+      window.addEventListener('pagehide', cleanup, { once: true, signal })
+    })
+  }
+
+  initMusicPlayers()
+  document.addEventListener('astro:page-load', initMusicPlayers)
+</script>

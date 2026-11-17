@@ -1,10 +1,9 @@
 ---
-// 首页（自 frontend/app/page.tsx + home-experience.tsx 平移）。
-// 开场字幕 / 滚动叙事 / Lenis / 鼠标视差孤岛脚本在 home-experience.astro（M2）。
+// 首页组合：静态首屏与下方滚动叙事。
 import Base from '../layouts/Base.astro'
 import HomeExperience from '../components/home/home-experience.astro'
 ---
 
-<Base title="Coastal Signal Archive" description="MLINStudio 的海岸信号档案：界面、机器、实践与持续更新的记录。">
+<Base image="/media/hero-f4f229.webp" title="Coastal Signal Archive" description="MLINStudio 的海岸信号档案：界面、机器、实践与持续更新的记录。">
   <HomeExperience />
 </Base>

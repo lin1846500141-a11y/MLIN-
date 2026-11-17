@@ -1,0 +1,441 @@
+---
+interface Props {
+  current?: number
+  total?: number
+  active?: 'signals' | 'field-notes' | 'archive' | 'projects'
+  scrollTarget?: string
+}
+
+const {
+  current = 1,
+  total = 1,
+  active = 'signals',
+  scrollTarget = '#studio-position',
+} = Astro.props
+
+const formatCount = (num: number) => String(Math.max(1, Math.floor(num))).padStart(2, '0')
+const currentText = formatCount(current)
+const totalText = formatCount(total)
+
+const panelItems: Array<{
+  id: NonNullable<Props['active']>
+  label: string
+  href: string
+}> = [
+  { id: 'signals', label: 'SIGNALS', href: '#top' },
+  { id: 'field-notes', label: 'FIELD NOTES', href: '#field-heading' },
+  { id: 'archive', label: 'ARCHIVE', href: '/wiki' },
+  { id: 'projects', label: 'PROJECTS', href: '#field-heading' },
+]
+---
+
+<aside class="signal-panel" data-signal-panel aria-label="Coastal Signal Archive 索引栏">
+  <div class="signal-panel-top">
+    <p class="signal-panel-brand">
+      <span>COASTAL</span>
+      <span>SIGNAL</span>
+      <span>ARCHIVE</span>
+    </p>
+  </div>
+
+  <div class="signal-panel-main">
+    <div class="signal-panel-counter" aria-label={`当前视觉索引 ${currentText} / ${totalText}`}>
+      <strong class="signal-panel-current">{currentText}</strong>
+      <span class="signal-panel-total">/ {totalText}</span>
+    </div>
+
+    <div class="signal-panel-track" aria-hidden="true">
+      <span class="signal-panel-track-dot"></span>
+      <span class="signal-panel-track-line"></span>
+    </div>
+
+    <nav class="signal-panel-nav" aria-label="首屏章节与归档索引">
+      {
+        panelItems.map((item) => {
+          const isActive = item.id === active
+          return (
+            <a
+              class="signal-panel-link"
+              href={item.href}
+              data-panel-link={item.id}
+              data-active={isActive ? 'true' : undefined}
+              aria-current={isActive ? 'location' : undefined}
+            >
+              <span class="signal-panel-marker" aria-hidden="true" />
+              <span class="signal-panel-label">{item.label}</span>
+            </a>
+          )
+        })
+      }
+    </nav>
+  </div>
+
+  <div class="signal-panel-facets" aria-hidden="true">
+    <span class="signal-panel-facet signal-panel-facet-1"></span>
+    <span class="signal-panel-facet signal-panel-facet-2"></span>
+  </div>
+
+  <a class="signal-panel-scroll" href={scrollTarget} aria-label="向下滚动至档案叙事区">
+    <span class="signal-panel-scroll-text">
+      <span>SCROLL</span>
+      <span>DOWN</span>
+    </span>
+    <span class="signal-panel-scroll-arrow" aria-hidden="true">
+      <svg viewBox="0 0 12 28" width="10" height="24" fill="none">
+        <path
+          d="M6 1V26M6 26L1.5 21.5M6 26L10.5 21.5"
+          stroke="currentColor"
+          stroke-width="1.1"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </span>
+  </a>
+
+  <div class="signal-panel-foot" aria-hidden="true">
+    <strong>{currentText}</strong>
+    <span>/ {totalText}</span>
+  </div>
+</aside>
+
+<style>
+  .signal-panel {
+    --_panel-width: var(--home-panel-width, clamp(86px, 5.5vw, 100px));
+    --_text: var(--home-text, #f4f6fa);
+    --_muted: var(--home-muted, #b9c3d3);
+    --_faint: var(--home-faint, #8b99ae);
+    --_line: var(--home-line, rgba(225, 234, 248, 0.22));
+    --_glass-bg: var(
+      --home-glass-bg,
+      linear-gradient(145deg, rgba(161, 182, 216, 0.18), rgba(8, 19, 36, 0.42))
+    );
+    --_glass-border: var(--home-glass-border, 1px solid rgba(223, 233, 251, 0.28));
+    --_glass-blur: var(--home-glass-blur, 16px);
+    --_glass-radius: var(--home-glass-radius, 10px);
+    --_glass-shadow: var(--home-glass-shadow, inset 0 1px 0 rgba(255, 255, 255, 0.08));
+    --_font-ui: var(
+      --home-font-ui,
+      "Helvetica Neue",
+      "Inter",
+      "Noto Sans SC",
+      Arial,
+      sans-serif
+    );
+    --_font-display: var(--home-font-display, Georgia, "Times New Roman", "Noto Serif SC", serif);
+    --_track-nav: var(--home-track-nav, 0.2em);
+    --_space-1: var(--home-space-1, 8px);
+    --_space-2: var(--home-space-2, 16px);
+    --_space-3: var(--home-space-3, 24px);
+    --_space-4: var(--home-space-4, 40px);
+
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: var(--_panel-width);
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border: var(--_glass-border);
+    border-radius: var(--_glass-radius);
+    background: var(--_glass-bg);
+    box-shadow: var(--_glass-shadow);
+    color: var(--_text);
+    font-family: var(--_font-ui);
+    backdrop-filter: blur(var(--_glass-blur));
+    -webkit-backdrop-filter: blur(var(--_glass-blur));
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .signal-panel {
+      background: linear-gradient(160deg, rgba(16, 31, 53, 0.92), rgba(8, 19, 34, 0.96));
+    }
+  }
+
+  .signal-panel-top {
+    padding: var(--_space-2) 12px 14px;
+    border-bottom: 1px solid var(--_line);
+  }
+
+  .signal-panel-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin: 0;
+    color: var(--_text);
+    font-size: 8.5px;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: var(--_track-nav);
+  }
+
+  .signal-panel-main {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    flex-direction: column;
+    padding: 18px 12px var(--_space-2);
+  }
+
+  .signal-panel-counter {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  .signal-panel-current {
+    color: var(--_text);
+    font-family: var(--_font-display);
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+
+  .signal-panel-total {
+    color: var(--_faint);
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+
+  .signal-panel-track {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 7px;
+    height: clamp(38px, 6.2vh, 64px);
+    margin: 14px 0 18px 3px;
+  }
+
+  .signal-panel-track-dot {
+    width: 4px;
+    height: 4px;
+     flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--_text);
+    box-shadow: 0 0 6px rgba(244, 246, 250, 0.75);
+  }
+
+  .signal-panel-track-line {
+    width: 1px;
+    flex: 1 1 auto;
+    background: linear-gradient(
+      180deg,
+      rgba(244, 246, 250, 0.68) 0%,
+      rgba(225, 234, 248, 0.22) 100%
+    );
+  }
+
+  .signal-panel-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    margin-top: 2px;
+  }
+
+  .signal-panel-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 3px 0;
+    color: var(--_muted);
+    font-size: 7.5px;
+    line-height: 1.3;
+    letter-spacing: 0.15em;
+    text-decoration: none;
+    transition: color 0.18s ease, opacity 0.18s ease;
+  }
+
+  .signal-panel-link:hover {
+    color: var(--_text);
+  }
+
+  .signal-panel-link[data-active='true'] {
+    color: var(--_text);
+    font-weight: 500;
+  }
+
+  .signal-panel-marker {
+    width: 3px;
+    height: 3px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--_faint);
+    transition:
+      width 0.18s ease,
+      height 0.18s ease,
+      border-radius 0.18s ease,
+      background-color 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .signal-panel-link[data-active='true'] .signal-panel-marker {
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+    background: var(--_text);
+    box-shadow: 0 0 6px rgba(244, 246, 250, 0.55);
+  }
+
+  .signal-panel-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .signal-panel-facets {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    height: clamp(110px, 16.5vh, 168px);
+    flex-shrink: 0;
+    border-top: 1px solid var(--_line);
+    border-bottom: 1px solid var(--_line);
+    overflow: hidden;
+  }
+
+  .signal-panel-facet {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .signal-panel-facet-1 {
+    border-bottom: 1px solid rgba(225, 234, 248, 0.14);
+    background:
+      linear-gradient(128deg, rgba(228, 238, 252, 0.18) 0%, rgba(124, 152, 192, 0.06) 46%, rgba(8, 19, 36, 0.42) 50%, rgba(164, 189, 224, 0.14) 100%),
+      linear-gradient(212deg, rgba(244, 246, 250, 0.12) 0%, transparent 58%);
+  }
+
+  .signal-panel-facet-2 {
+    background:
+      linear-gradient(142deg, rgba(8, 19, 36, 0.45) 0%, rgba(155, 181, 218, 0.16) 48%, rgba(12, 26, 48, 0.36) 52%, rgba(222, 234, 250, 0.12) 100%),
+      linear-gradient(32deg, rgba(8, 19, 36, 0.38) 0%, rgba(210, 226, 248, 0.1) 64%, transparent 100%);
+  }
+
+  .signal-panel-scroll {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--_space-1);
+    padding: 18px 12px;
+    border-bottom: 1px solid var(--_line);
+    color: var(--_text);
+    font-size: 8px;
+    line-height: 1.45;
+    letter-spacing: var(--_track-nav);
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .signal-panel-scroll:hover {
+    background: rgba(225, 234, 248, 0.08);
+  }
+
+  .signal-panel-scroll-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .signal-panel-scroll-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--_muted);
+    transition: transform 0.22s ease, color 0.22s ease;
+  }
+
+  .signal-panel-scroll:hover .signal-panel-scroll-arrow {
+    color: var(--_text);
+    transform: translateY(2px);
+  }
+
+  .signal-panel-foot {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 14px 12px;
+    color: var(--_muted);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+  }
+
+  .signal-panel-foot strong {
+    color: var(--_text);
+    font-weight: 600;
+  }
+
+  .signal-panel-foot span {
+    color: var(--_faint);
+    font-size: 8px;
+  }
+
+  .signal-panel a:focus-visible {
+    outline: 2px solid var(--_text);
+    outline-offset: -2px;
+    border-radius: 3px;
+  }
+
+  @media (max-height: 760px) {
+    .signal-panel-facets {
+      height: 82px;
+    }
+
+    .signal-panel-track {
+      height: 32px;
+      margin: 10px 0 12px 3px;
+    }
+
+    .signal-panel-scroll {
+      padding: 12px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .signal-panel-link,
+    .signal-panel-marker,
+    .signal-panel-scroll,
+    .signal-panel-scroll-arrow {
+      transition: none;
+    }
+
+    .signal-panel-scroll:hover .signal-panel-scroll-arrow {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  const initSignalPanels = () => {
+    const panels = document.querySelectorAll<HTMLElement>('[data-signal-panel]')
+    panels.forEach((panel) => {
+      if (panel.dataset.panelReady === 'true') return
+      panel.dataset.panelReady = 'true'
+
+      const links = Array.from(panel.querySelectorAll<HTMLAnchorElement>('[data-panel-link]'))
+      links.forEach((link) => {
+        link.addEventListener('click', () => {
+          const href = link.getAttribute('href') || ''
+          if (!href.startsWith('#')) return
+          links.forEach((item) => {
+            if (item === link) {
+              item.dataset.active = 'true'
+              item.setAttribute('aria-current', 'location')
+            } else {
+              delete item.dataset.active
+              item.removeAttribute('aria-current')
+            }
+          })
+        })
+      })
+    })
+  }
+
+  initSignalPanels()
+  document.addEventListener('astro:page-load', initSignalPanels)
+</script>
