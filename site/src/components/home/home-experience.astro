@@ -2,7 +2,7 @@
 import 'lenis/dist/lenis.css'
 import Crosshair from './crosshair.astro'
 import HomeHero from './home-hero.astro'
-import { capabilityNotes } from '../../lib/archive-data'
+import HomeFieldNotes from './home-field-notes.astro'
 
 const routeLinks = [
   {
@@ -68,47 +68,7 @@ const routeLinks = [
     <div class="manifesto-current">CURRENT / 001</div>
   </section>
 
-  <section class="field-section" aria-labelledby="field-heading">
-    <header class="field-header">
-      <div>
-        <span>03 — SELECTED FIELDS</span>
-        <p>THREE WAYS OF MAKING</p>
-      </div>
-      <h2 id="field-heading">FIELD NOTES</h2>
-      <Crosshair />
-    </header>
-
-    <div class="field-plates">
-      {
-        capabilityNotes.map((note, index) => (
-          <article class={`field-plate plate-${index + 1}`}>
-            {index === 0 && (
-              <div class="plate-photo" aria-hidden="true">
-                <img
-                  src="/media/coastal-hero.webp"
-                  alt=""
-                  width="1672"
-                  height="941"
-                  loading="lazy"
-                />
-              </div>
-            )}
-            {index === 2 && <div class="plate-sun" aria-hidden="true" />}
-            <div class="plate-topline">
-              <span>{note.kicker}</span>
-              <b>{note.no}</b>
-            </div>
-            <h3>{note.title.split('\n').map((line) => <span>{line}</span>)}</h3>
-            <p>{note.body}</p>
-            <footer>
-              <span>{note.meta}</span>
-              <Crosshair />
-            </footer>
-          </article>
-        ))
-      }
-    </div>
-  </section>
+  <HomeFieldNotes />
 
   <section class="routes-section" aria-labelledby="routes-heading">
     <div class="routes-heading">
@@ -146,10 +106,6 @@ const routeLinks = [
     </div>
   </footer>
 </main>
-
-<style>
-  .plate-photo img { position: absolute; inset: 0; width: 100%; height: 100%; }
-</style>
 
 <script>
   import { gsap } from 'gsap'
@@ -212,6 +168,7 @@ const routeLinks = [
           clipPath: 'inset(0 100% 0 0)',
           duration: 1,
           ease: 'power3.inOut',
+          clearProps: 'clipPath',
           scrollTrigger: { trigger: row, start: 'top 90%' },
         })
       })

@@ -1,6 +1,4 @@
 ---
-// 全站统一顶栏（与首页 MLINStudio + 贯穿细线 + HOME / ARCHIVE / PROJECTS / ABOUT 完全一致）
-// 首页（/）因内嵌在 hero-stage 动画层中，此处仅在非首页渲染。
 const topNavLinks = [
   { href: '/', label: 'HOME' },
   { href: '/wiki', label: 'ARCHIVE' },
@@ -26,9 +24,10 @@ const isActive = (href: string) => {
         MLINStudio
       </a>
       <span class="hero-top-rule" aria-hidden="true" />
+      <span class="hero-brand-note">COASTAL SIGNAL ARCHIVE</span>
       <nav class="hero-topnav" aria-label="主导航">
         {topNavLinks.map((item) => (
-          <a href={item.href} class={isActive(item.href) ? 'is-active' : undefined}>
+          <a href={item.href} aria-current={isActive(item.href) ? (pathname === normalize(item.href) ? 'page' : 'location') : undefined}>
             <span>{item.label}</span>
           </a>
         ))}
