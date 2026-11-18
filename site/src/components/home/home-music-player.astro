@@ -20,7 +20,9 @@ const signalFmTracks = [
   { file: 'dingxuan.mp3', title: '鸣潮先约电台 / 黄霄雲 / 杨秉音 — 定玄' },
 ]
 
-const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
+const waveRestHeights = [
+  3, 5, 8, 13, 7, 16, 22, 14, 26, 18, 10, 24, 28, 16, 21, 12, 19, 13, 8, 12, 6, 4, 3,
+]
 ---
 
 <section
@@ -47,14 +49,18 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
     </span>
   </div>
 
+  <span class="music-player-sep music-player-sep-main" aria-hidden="true"></span>
+
   <div class="music-player-body">
     <div class="music-player-info">
-      <p class="music-player-kicker">SIGNAL RECEIVER · FM 01 : COASTAL</p>
+      <p class="music-player-kicker">SIGNAL RECEIVER — FM 01 : COASTAL</p>
       <p class="music-player-title" data-player-title title={placeholderTitle}>
         {placeholderTitle}
       </p>
       <p class="music-player-error" data-player-error aria-live="polite" hidden></p>
     </div>
+
+    <span class="music-player-sep music-player-sep-time" aria-hidden="true"></span>
 
     <span class="music-player-time" data-player-time>00:00 / --:--</span>
   </div>
@@ -125,20 +131,21 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
 
 <style>
   .music-player {
-    --_player-height: var(--home-player-height, 62px);
-    --_text: var(--home-text, #f4f6fa);
-    --_muted: var(--home-muted, #b9c3d3);
-    --_line: var(--home-line, rgba(225, 234, 248, 0.22));
-    --_accent: var(--home-accent, #f16c75);
-    --_glass-bg: var(
+    --receiver-height: var(--home-player-height, 68px);
+    --receiver-text: var(--home-text, #f4f6fa);
+    --receiver-muted: var(--home-muted, #b9c3d3);
+    --receiver-faint: var(--home-faint, #8b99ae);
+    --receiver-line: var(--home-line, rgba(225, 234, 248, 0.22));
+    --receiver-accent: var(--home-accent, #f16c75);
+    --receiver-glass-bg: var(
       --home-glass-bg,
       linear-gradient(145deg, rgba(161, 182, 216, 0.18), rgba(8, 19, 36, 0.42))
     );
-    --_glass-border: var(--home-glass-border, 1px solid rgba(223, 233, 251, 0.28));
-    --_glass-blur: var(--home-glass-blur, 16px);
-    --_glass-radius: var(--home-glass-radius, 10px);
-    --_glass-shadow: var(--home-glass-shadow, inset 0 1px 0 rgba(255, 255, 255, 0.08));
-    --_font-ui: var(
+    --receiver-glass-border: var(--home-glass-border, 1px solid rgba(223, 233, 251, 0.28));
+    --receiver-glass-blur: var(--home-glass-blur, 16px);
+    --receiver-glass-radius: var(--home-glass-radius, 10px);
+    --receiver-glass-shadow: var(--home-glass-shadow, inset 0 1px 0 rgba(255, 255, 255, 0.08));
+    --receiver-font-ui: var(
       --home-font-ui,
       "Helvetica Neue",
       "Inter",
@@ -146,40 +153,93 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
       Arial,
       sans-serif
     );
-    --_font-mono: var(--home-font-mono, "SFMono-Regular", "Roboto Mono", Consolas, monospace);
-    --_track-nav: var(--home-track-nav, 0.2em);
-    --_space-1: var(--home-space-1, 8px);
-    --_space-2: var(--home-space-2, 16px);
-    --_space-3: var(--home-space-3, 24px);
-    --_space-4: var(--home-space-4, 40px);
+    --receiver-font-mono: var(
+      --home-font-mono,
+      "SFMono-Regular",
+      "Roboto Mono",
+      Consolas,
+      monospace
+    );
+    --receiver-px: 0px;
+    --receiver-py: 0px;
 
+    position: relative;
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 14px;
     width: 100%;
-    min-height: var(--_player-height);
-    padding: 8px 18px 8px 14px;
-    border: var(--_glass-border);
-    border-radius: var(--_glass-radius);
-    background: var(--_glass-bg);
-    box-shadow: var(--_glass-shadow);
-    color: var(--_text);
-    font-family: var(--_font-ui);
-    backdrop-filter: blur(var(--_glass-blur));
-    -webkit-backdrop-filter: blur(var(--_glass-blur));
+    min-width: 0;
+    min-height: var(--receiver-height);
+    padding: 8px 14px;
+    border: var(--receiver-glass-border);
+    border-top-color: rgba(235, 244, 255, 0.42);
+    border-bottom-color: rgba(160, 184, 216, 0.18);
+    border-radius: var(--receiver-glass-radius);
+    background:
+      linear-gradient(
+        180deg,
+        rgba(222, 234, 250, 0.13) 0%,
+        rgba(104, 132, 172, 0.1) 18%,
+        rgba(15, 30, 54, 0.52) 56%,
+        rgba(7, 17, 32, 0.72) 100%
+      ),
+      var(--receiver-glass-bg);
+    box-shadow:
+      var(--receiver-glass-shadow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.24),
+      inset 0 -1px 0 rgba(4, 10, 20, 0.48),
+      0 18px 42px rgba(3, 10, 22, 0.44);
+    color: var(--receiver-text);
+    font-family: var(--receiver-font-ui);
+    backdrop-filter: blur(var(--receiver-glass-blur)) saturate(125%);
+    -webkit-backdrop-filter: blur(var(--receiver-glass-blur)) saturate(125%);
+    transition: border-color 0.22s ease, box-shadow 0.22s ease;
+  }
+
+  /* Brushed metallic specular sheen layer (static depth without JS, subtle <=2px pointer drift with JS) */
+  .music-player::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(
+      108deg,
+      rgba(255, 255, 255, 0.11) 0%,
+      rgba(210, 228, 252, 0.03) 34%,
+      transparent 58%,
+      rgba(180, 208, 245, 0.06) 100%
+    );
+    transform: translate3d(var(--receiver-px), var(--receiver-py), 0);
+  }
+
+  .music-player:hover,
+  .music-player:focus-within {
+    border-top-color: rgba(242, 248, 255, 0.56);
+    box-shadow:
+      var(--receiver-glass-shadow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(4, 10, 20, 0.52),
+      0 20px 46px rgba(3, 10, 22, 0.52);
+  }
+
+  .music-player > * {
+    position: relative;
+    z-index: 1;
   }
 
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .music-player {
-      background: linear-gradient(145deg, rgba(16, 31, 53, 0.92), rgba(8, 19, 34, 0.96));
+      background: linear-gradient(165deg, rgba(19, 36, 62, 0.94), rgba(8, 19, 34, 0.97));
     }
   }
 
   .music-player-visual {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     flex-shrink: 0;
   }
 
@@ -188,17 +248,21 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
-    border: 1px solid rgba(225, 234, 248, 0.36);
+    border: 1px solid rgba(225, 234, 248, 0.38);
     border-radius: 50%;
-    background: radial-gradient(
-      circle,
-      rgba(8, 19, 34, 0.92) 0%,
-      rgba(19, 37, 64, 0.68) 65%,
-      rgba(8, 19, 34, 0.94) 100%
-    );
+    background:
+      radial-gradient(
+        circle at 35% 30%,
+        rgba(64, 88, 124, 0.52) 0%,
+        rgba(14, 27, 48, 0.92) 58%,
+        rgba(6, 14, 28, 0.98) 100%
+      );
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.24),
+      0 2px 8px rgba(3, 10, 22, 0.45);
     animation: music-player-spin 11s linear infinite;
     animation-play-state: paused;
   }
@@ -210,7 +274,7 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
   .music-player-disc-ring {
     position: absolute;
     inset: 5px;
-    border: 1px dashed rgba(225, 234, 248, 0.18);
+    border: 1px dashed rgba(225, 234, 248, 0.22);
     border-radius: 50%;
   }
 
@@ -218,10 +282,17 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
     position: relative;
     width: 10px;
     height: 10px;
-    border: 1.5px solid rgba(244, 246, 250, 0.9);
+    border: 1.5px solid rgba(244, 246, 250, 0.92);
     border-radius: 50%;
-    background: var(--_accent);
+    background: var(--receiver-accent);
     box-shadow: 0 0 8px rgba(241, 108, 117, 0.55);
+    transition: box-shadow 0.25s ease;
+  }
+
+  .music-player[data-playing='true'] .music-player-disc-core {
+    box-shadow:
+      0 0 12px rgba(241, 108, 117, 0.9),
+      0 0 2px rgba(255, 255, 255, 0.8);
   }
 
   @keyframes music-player-spin {
@@ -234,9 +305,9 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
     position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: 2px;
     height: 32px;
-    padding: 0 4px;
+    padding: 0 3px;
   }
 
   .music-player-wave::before {
@@ -246,7 +317,7 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
     right: 0;
     top: 50%;
     height: 1px;
-    background: var(--_line);
+    background: var(--receiver-line);
     transform: translateY(-50%);
     pointer-events: none;
   }
@@ -255,28 +326,40 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
     position: relative;
     z-index: 1;
     display: block;
-    width: 2px;
+    width: 1.5px;
     min-height: 3px;
-    max-height: 30px;
+    max-height: 29px;
     border-radius: 999px;
-    background: rgba(244, 246, 250, 0.86);
+    background: rgba(244, 246, 250, 0.88);
     transition: height 90ms ease-out;
+  }
+
+  .music-player-sep {
+    display: block;
+    width: 1px;
+    height: 28px;
+    flex-shrink: 0;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(225, 234, 248, 0.26) 50%,
+      transparent 100%
+    );
   }
 
   .music-player-body {
     display: flex;
     flex: 1 1 auto;
     min-width: 0;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding-left: 4px;
+    gap: 14px;
   }
 
   .music-player-info {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
     min-width: 0;
     flex: 1 1 auto;
   }
@@ -284,11 +367,13 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
   .music-player-kicker {
     margin: 0;
     overflow: hidden;
-    color: var(--_text);
-    font-size: 9px;
+    color: rgba(244, 246, 250, 0.9);
+    font-size: 8.5px;
     font-weight: 500;
     line-height: 1.2;
     letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 1px rgba(4, 10, 20, 0.7);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -296,26 +381,26 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
   .music-player-title {
     margin: 0;
     overflow: hidden;
-    color: var(--_muted);
+    color: var(--receiver-muted);
     font-size: 11.5px;
     line-height: 1.35;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .music-player-error {
     margin: 0;
-    color: var(--_accent);
+    color: var(--receiver-accent);
     font-size: 10px;
     line-height: 1.25;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
   }
 
   .music-player-time {
     flex-shrink: 0;
-    color: var(--_muted);
-    font-family: var(--_font-mono);
+    color: var(--receiver-muted);
+    font-family: var(--receiver-font-mono);
     font-size: 10px;
     line-height: 1.35;
     letter-spacing: 0.08em;
@@ -326,9 +411,8 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
   .music-player-controls {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
     flex-shrink: 0;
-    margin-left: 6px;
   }
 
   .music-player-btn {
@@ -338,29 +422,41 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
     min-width: 44px;
     min-height: 44px;
     padding: 0;
-    border: 0;
-    border-radius: 6px;
+    border: 1px solid transparent;
+    border-radius: 7px;
     background: transparent;
-    color: var(--_text);
+    color: var(--receiver-text);
     cursor: pointer;
-    transition: background-color 0.18s ease, color 0.18s ease, transform 0.15s ease, opacity 0.18s ease;
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      color 0.18s ease,
+      transform 0.12s ease;
   }
 
   .music-player-btn-step {
-    color: rgba(244, 246, 250, 0.85);
+    color: rgba(244, 246, 250, 0.84);
   }
 
   .music-player-btn:hover {
+    border-color: rgba(225, 234, 248, 0.18);
     background: rgba(225, 234, 248, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
     color: #ffffff;
   }
 
+  .music-player-btn-toggle:hover {
+    border-color: rgba(225, 234, 248, 0.28);
+    background: rgba(225, 234, 248, 0.14);
+  }
+
   .music-player-btn:active {
-    transform: scale(0.94);
+    transform: translateY(1px);
   }
 
   .music-player-btn:focus-visible {
-    outline: 2px solid var(--_text);
+    outline: 2px solid var(--receiver-text);
     outline-offset: 2px;
   }
 
@@ -378,14 +474,15 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
 
   .music-player-noscript {
     margin: 0;
-    color: var(--_muted);
+    color: var(--receiver-faint);
     font-size: 10px;
+    line-height: 1.4;
   }
 
   @media (max-width: 680px) {
     .music-player {
       flex-wrap: wrap;
-      gap: 8px 12px;
+      gap: 8px 10px;
       padding: 10px 12px;
     }
 
@@ -394,31 +491,56 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
       gap: 10px;
     }
 
+    .music-player-sep-main {
+      display: none;
+    }
+
     .music-player-controls {
       order: 2;
       margin-left: auto;
-      gap: 2px;
+      gap: 0;
     }
 
     .music-player-body {
       order: 3;
       flex: 1 1 100%;
       width: 100%;
-      padding-left: 0;
-      padding-top: 6px;
-      border-top: 1px solid var(--_line);
-      align-items: center;
+      gap: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--receiver-line);
+    }
+
+    .music-player-sep-time {
+      height: 22px;
     }
   }
 
-  @media (max-width: 380px) {
-    .music-player-wave {
+  @media (max-width: 400px) {
+    .music-player {
+      padding: 9px 10px;
+      gap: 6px 8px;
+    }
+
+    .music-player-visual {
+      gap: 8px;
+    }
+
+    .music-player-disc {
+      width: 32px;
+      height: 32px;
+    }
+
+    .music-player-wave-bar:nth-child(n + 14) {
       display: none;
     }
 
     .music-player-kicker {
-      font-size: 8px;
+      font-size: 7.5px;
       letter-spacing: 0.1em;
+    }
+
+    .music-player-sep-time {
+      display: none;
     }
   }
 
@@ -427,9 +549,16 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
       animation: none !important;
     }
 
+    .music-player,
+    .music-player::before,
+    .music-player-disc-core,
     .music-player-wave-bar,
     .music-player-btn {
       transition: none;
+    }
+
+    .music-player::before {
+      transform: none;
     }
   }
 </style>
@@ -450,6 +579,9 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
 
   const initMusicPlayers = () => {
     const players = document.querySelectorAll<HTMLElement>('[data-home-music-player]')
+    const canParallax = () =>
+      window.matchMedia('(pointer: fine) and (hover: hover)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     players.forEach((root) => {
       if (root.dataset.playerReady === 'true') return
@@ -484,6 +616,10 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
       let analyser: AnalyserNode | null = null
       let freqData: Uint8Array<ArrayBuffer> | null = null
       let rafId = 0
+
+      let sheenRafId = 0
+      let sheenX = 0
+      let sheenY = 0
 
       let queue: TrackItem[] = []
       let lastQueuedFile = ''
@@ -540,10 +676,10 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
         waveBars.forEach((bar, idx) => {
           const binIndex = Math.min(
             binCount - 1,
-            Math.floor((idx / waveBars.length) * (binCount * 0.65)),
+            Math.floor((idx / waveBars.length) * (binCount * 0.72)),
           )
           const energy = freqData![binIndex] / 255
-          const h = Math.max(3, Math.round(3 + energy * 27))
+          const h = Math.max(3, Math.round(3 + energy * 25))
           bar.style.height = `${h}px`
         })
         rafId = requestAnimationFrame(tickWaveform)
@@ -738,6 +874,41 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
         }
       }
 
+      const commitSheen = () => {
+        sheenRafId = 0
+        root.style.setProperty('--receiver-px', `${sheenX.toFixed(2)}px`)
+        root.style.setProperty('--receiver-py', `${sheenY.toFixed(2)}px`)
+      }
+
+      const scheduleSheen = (x: number, y: number) => {
+        sheenX = x
+        sheenY = y
+        if (!sheenRafId) {
+          sheenRafId = requestAnimationFrame(commitSheen)
+        }
+      }
+
+      root.addEventListener(
+        'pointermove',
+        (event) => {
+          if (!canParallax()) return
+          const rect = root.getBoundingClientRect()
+          if (rect.width <= 0 || rect.height <= 0) return
+          const nx = (event.clientX - rect.left) / rect.width - 0.5
+          const ny = (event.clientY - rect.top) / rect.height - 0.5
+          scheduleSheen(nx * 3, ny * 2)
+        },
+        { signal, passive: true },
+      )
+
+      root.addEventListener(
+        'pointerleave',
+        () => {
+          scheduleSheen(0, 0)
+        },
+        { signal },
+      )
+
       toggleBtn.addEventListener('click', () => void handleToggle(), { signal })
       prevBtn?.addEventListener('click', () => void handlePrevious(), { signal })
       nextBtn?.addEventListener('click', () => void handleNext(), { signal })
@@ -782,6 +953,12 @@ const waveRestHeights = [4, 6, 10, 15, 22, 28, 18, 25, 16, 11, 7, 5, 4]
         ++opToken
         desiredPlaying = false
         resetWaveBars()
+        if (sheenRafId) {
+          cancelAnimationFrame(sheenRafId)
+          sheenRafId = 0
+        }
+        root.style.removeProperty('--receiver-px')
+        root.style.removeProperty('--receiver-py')
         controller.abort()
         audioEl.pause()
         if (audioCtx && audioCtx.state !== 'closed') {
